@@ -6,6 +6,8 @@ import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // F critical values (α=0.05) approximate
 const getFCritical = (df1: number, df2: number): number => {
@@ -17,6 +19,9 @@ const getFCritical = (df1: number, df2: number): number => {
 };
 
 export function ANOVACalculator({ toolId = "anova", toolName = "ANOVA", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [groupData, setGroupData] = useState("");
   const [result, setResult] = useState<{
     groups: number; totalN: number; grandMean: number;
@@ -82,81 +87,97 @@ export function ANOVACalculator({ toolId = "anova", toolName = "ANOVA", phase = 
   return (
     <div className="space-y-4 pt-2">
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" /> Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs">Gruppdata (en grupp per rad, värden separerade med mellanslag)</Label>
+        <Label className="text-xs">
+          {isZh ? "各组测量数据 (每行代表一个独立样本组，数值间用空格或逗号分隔)" : "Group Data (one group per line, values separated by space or comma)"}
+        </Label>
         <textarea
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring h-24"
-          placeholder="Grupp 1: 23 25 27 24 26&#10;Grupp 2: 30 32 28 31 29&#10;Grupp 3: 20 22 21 23 19"
+          placeholder={isZh ? "组 1: 23 25 27 24 26\n组 2: 30 32 28 31 29\n组 3: 20 22 21 23 19" : "Group 1: 23 25 27 24 26\nGroup 2: 30 32 28 31 29\nGroup 3: 20 22 21 23 19"}
           value={groupData}
           onChange={(e) => setGroupData(e.target.value)}
         />
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna ANOVA</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "执行单因素方差分析 (Run One-Way ANOVA)" : "Calculate One-Way ANOVA"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">F-värde</div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "F 统计量检验值" : "F-Statistic"}
+            </div>
             <div className="text-3xl font-bold font-mono">{result.F.toFixed(3)}</div>
-            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2">
-              {result.significant ? "✗ Signifikant skillnad mellan grupper" : "✓ Ingen signifikant skillnad"}
+            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2 text-xs">
+              {result.significant 
+                ? (isZh ? "✗ 组间均值存在显著差异 (F > F-crit, 拒绝 H₀)" : "✗ Statistically Significant Difference (Reject H₀)") 
+                : (isZh ? "✓ 各组间均值无显著差异 (F ≤ F-crit, 接受 H₀)" : "✓ No Significant Difference (Fail to Reject H₀)")}
             </Badge>
           </div>
 
           {/* ANOVA Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto border rounded-lg p-2 bg-muted/20">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b">
-                  <th className="p-1 text-left">Källa</th>
-                  <th className="p-1 text-right">SS</th>
-                  <th className="p-1 text-right">df</th>
-                  <th className="p-1 text-right">MS</th>
-                  <th className="p-1 text-right">F</th>
+                <tr className="border-b text-muted-foreground">
+                  <th className="p-1.5 text-left">{isZh ? "变异来源 (Source)" : "Source"}</th>
+                  <th className="p-1.5 text-right">{isZh ? "平方和 (SS)" : "SS"}</th>
+                  <th className="p-1.5 text-right">{isZh ? "自由度 (df)" : "df"}</th>
+                  <th className="p-1.5 text-right">{isZh ? "均方 (MS)" : "MS"}</th>
+                  <th className="p-1.5 text-right font-bold">F</th>
                 </tr>
               </thead>
               <tbody className="font-mono">
                 <tr className="border-b">
-                  <td className="p-1">Mellan</td>
-                  <td className="p-1 text-right">{result.SSB.toFixed(2)}</td>
-                  <td className="p-1 text-right">{result.dfB}</td>
-                  <td className="p-1 text-right">{result.MSB.toFixed(3)}</td>
-                  <td className="p-1 text-right font-bold">{result.F.toFixed(3)}</td>
+                  <td className="p-1.5 font-sans">{isZh ? "组间因子 (Between)" : "Between Groups"}</td>
+                  <td className="p-1.5 text-right">{result.SSB.toFixed(2)}</td>
+                  <td className="p-1.5 text-right">{result.dfB}</td>
+                  <td className="p-1.5 text-right">{result.MSB.toFixed(3)}</td>
+                  <td className="p-1.5 text-right font-bold text-primary">{result.F.toFixed(3)}</td>
                 </tr>
                 <tr className="border-b">
-                  <td className="p-1">Inom</td>
-                  <td className="p-1 text-right">{result.SSW.toFixed(2)}</td>
-                  <td className="p-1 text-right">{result.dfW}</td>
-                  <td className="p-1 text-right">{result.MSW.toFixed(3)}</td>
-                  <td className="p-1"></td>
+                  <td className="p-1.5 font-sans">{isZh ? "组内误差 (Within)" : "Within Groups (Error)"}</td>
+                  <td className="p-1.5 text-right">{result.SSW.toFixed(2)}</td>
+                  <td className="p-1.5 text-right">{result.dfW}</td>
+                  <td className="p-1.5 text-right">{result.MSW.toFixed(3)}</td>
+                  <td className="p-1.5"></td>
                 </tr>
                 <tr>
-                  <td className="p-1 font-bold">Total</td>
-                  <td className="p-1 text-right">{result.SST.toFixed(2)}</td>
-                  <td className="p-1 text-right">{result.dfB + result.dfW}</td>
-                  <td className="p-1"></td>
-                  <td className="p-1"></td>
+                  <td className="p-1.5 font-bold font-sans">{isZh ? "总和 (Total)" : "Total"}</td>
+                  <td className="p-1.5 text-right font-bold">{result.SST.toFixed(2)}</td>
+                  <td className="p-1.5 text-right font-bold">{result.dfB + result.dfW}</td>
+                  <td className="p-1.5"></td>
+                  <td className="p-1.5"></td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm text-center">
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">F-krit (α=0.05)</div><div className="font-mono">{result.FCrit.toFixed(3)}</div></div>
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">Antal grupper</div><div className="font-mono">{result.groups}</div></div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "F 临界值 (α=0.05)" : "F-Critical (α=0.05)"}</div>
+              <div className="font-mono">{result.FCrit.toFixed(3)}</div>
+            </div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "比较组数 (k)" : "Number of Groups (k)"}</div>
+              <div className="font-mono">{result.groups}</div>
+            </div>
           </div>
 
-          <div className="p-2 bg-muted/30 rounded text-xs">
-            <p className="font-medium mb-1">Gruppmedelvärden:</p>
-            {result.groupMeans.map((m, i) => (
-              <span key={i} className="inline-block mr-3 font-mono">Grupp {i + 1}: {m.toFixed(2)}</span>
-            ))}
+          <div className="p-2.5 bg-muted/30 rounded-lg text-xs border">
+            <p className="font-semibold mb-1 text-foreground">{isZh ? "各样本组均值明细 (Group Means):" : "Group Means:"}</p>
+            <div className="flex flex-wrap gap-2">
+              {result.groupMeans.map((m, i) => (
+                <span key={i} className="inline-block px-2 py-0.5 rounded bg-background border font-mono">
+                  {isZh ? `第 ${i + 1} 组` : `Group ${i + 1}`}: {m.toFixed(2)}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}

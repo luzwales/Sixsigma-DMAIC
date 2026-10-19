@@ -7,6 +7,8 @@ import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const getTCritical = (df: number): number => {
   if (df >= 100) return 1.96;
@@ -19,7 +21,10 @@ const getTCritical = (df: number): number => {
   return 1.96;
 };
 
-export function TwoSampleTTestCalculator({ toolId = "t-test-2sample", toolName = "2-sample t-test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function TwoSampleTTestCalculator({ toolId = "t-test-2sample", toolName = "2-Sample t-Test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [mean1, setMean1] = useState("");
   const [std1, setStd1] = useState("");
   const [n1, setN1] = useState("");
@@ -121,45 +126,90 @@ export function TwoSampleTTestCalculator({ toolId = "t-test-2sample", toolName =
   return (
     <div className="space-y-4 pt-2">
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" /> Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-muted-foreground">Grupp 1</p>
+        <p className="text-xs font-semibold text-muted-foreground">
+          {isZh ? "第 1 组 (例如：改善前 / 工艺A)" : "Group 1 (e.g. Baseline / Process A)"}
+        </p>
         <div className="grid grid-cols-3 gap-2">
-          <div className="space-y-1"><Label className="text-xs">Medelvärde</Label><Input type="number" step="0.01" value={mean1} onChange={(e) => setMean1(e.target.value)} className="h-8 text-sm" placeholder="X̄₁" /></div>
-          <div className="space-y-1"><Label className="text-xs">Std.avv.</Label><Input type="number" step="0.01" value={std1} onChange={(e) => setStd1(e.target.value)} className="h-8 text-sm" placeholder="s₁" /></div>
-          <div className="space-y-1"><Label className="text-xs">n</Label><Input type="number" min="2" value={n1} onChange={(e) => setN1(e.target.value)} className="h-8 text-sm" /></div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本均值" : "Mean"}</Label>
+            <Input type="number" step="0.01" value={mean1} onChange={(e) => setMean1(e.target.value)} className="h-8 text-sm" placeholder="X̄₁" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本标准差" : "Std Dev"}</Label>
+            <Input type="number" step="0.01" value={std1} onChange={(e) => setStd1(e.target.value)} className="h-8 text-sm" placeholder="s₁" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本容量 (n)" : "Sample (n)"}</Label>
+            <Input type="number" min="2" value={n1} onChange={(e) => setN1(e.target.value)} className="h-8 text-sm" placeholder="n₁" />
+          </div>
         </div>
-        <p className="text-xs font-semibold text-muted-foreground">Grupp 2</p>
+
+        <p className="text-xs font-semibold text-muted-foreground">
+          {isZh ? "第 2 组 (例如：改善后 / 工艺B)" : "Group 2 (e.g. Improved / Process B)"}
+        </p>
         <div className="grid grid-cols-3 gap-2">
-          <div className="space-y-1"><Label className="text-xs">Medelvärde</Label><Input type="number" step="0.01" value={mean2} onChange={(e) => setMean2(e.target.value)} className="h-8 text-sm" placeholder="X̄₂" /></div>
-          <div className="space-y-1"><Label className="text-xs">Std.avv.</Label><Input type="number" step="0.01" value={std2} onChange={(e) => setStd2(e.target.value)} className="h-8 text-sm" placeholder="s₂" /></div>
-          <div className="space-y-1"><Label className="text-xs">n</Label><Input type="number" min="2" value={n2} onChange={(e) => setN2(e.target.value)} className="h-8 text-sm" /></div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本均值" : "Mean"}</Label>
+            <Input type="number" step="0.01" value={mean2} onChange={(e) => setMean2(e.target.value)} className="h-8 text-sm" placeholder="X̄₂" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本标准差" : "Std Dev"}</Label>
+            <Input type="number" step="0.01" value={std2} onChange={(e) => setStd2(e.target.value)} className="h-8 text-sm" placeholder="s₂" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{isZh ? "样本容量 (n)" : "Sample (n)"}</Label>
+            <Input type="number" min="2" value={n2} onChange={(e) => setN2(e.target.value)} className="h-8 text-sm" placeholder="n₂" />
+          </div>
         </div>
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna 2-sample t-test</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "计算双样本 t 检验 (Welch t-test)" : "Calculate 2-Sample t-Test"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">t-värde (Welch)</div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "t 统计量 (Welch t-test)" : "t-Statistic (Welch)"}
+            </div>
             <div className="text-3xl font-bold font-mono">{result.t.toFixed(3)}</div>
-            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2">
-              {result.significant ? "✗ Signifikant skillnad" : "✓ Ingen signifikant skillnad"}
+            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2 text-xs">
+              {result.significant 
+                ? (isZh ? "✗ 组间均值存在显著差异 (拒绝 H₀, p < 0.05)" : "✗ Statistically Significant Difference (p < 0.05)") 
+                : (isZh ? "✓ 组间均值无显著差异 (接受 H₀, p > 0.05)" : "✓ No Significant Difference (p > 0.05)")}
             </Badge>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">df</div><div className="font-mono">{result.df}</div></div>
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">t-krit</div><div className="font-mono">±{result.tCrit.toFixed(3)}</div></div>
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">p-värde</div><div className="font-mono">{result.pApprox}</div></div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "自由度 (df)" : "df (Welch)"}</div>
+              <div className="font-mono">{result.df}</div>
+            </div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "临界值 (t-crit)" : "t-Critical"}</div>
+              <div className="font-mono">±{result.tCrit.toFixed(3)}</div>
+            </div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "P 值估计" : "p-Value"}</div>
+              <div className="font-mono">{result.pApprox}</div>
+            </div>
           </div>
-          <div className="p-3 bg-muted/30 rounded">
-            <div className="text-xs text-muted-foreground">95% KI för skillnaden (μ₁ - μ₂)</div>
-            <div className="font-mono text-sm">[{result.ci.lower.toFixed(3)}, {result.ci.upper.toFixed(3)}]</div>
+          <div className="p-3 bg-muted/30 rounded border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "均值差值 (μ₁ - μ₂) 的 95% 置信区间 (CI)" : "95% CI for Difference (μ₁ - μ₂)"}
+            </div>
+            <div className="font-mono text-sm font-semibold">
+              [{result.ci.lower.toFixed(3)}, {result.ci.upper.toFixed(3)}]
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {result.ci.lower <= 0 && result.ci.upper >= 0
+                ? (isZh ? "✓ 置信区间包含 0，两组之间未表现出实质差异" : "✓ Confidence interval includes 0 (no difference)")
+                : (isZh ? `✗ 置信区间不含 0，两组差异估计值约为 ${result.diff.toFixed(3)}` : `✗ CI excludes 0, estimated difference is ${result.diff.toFixed(3)}`)}
+            </div>
           </div>
         </div>
       )}

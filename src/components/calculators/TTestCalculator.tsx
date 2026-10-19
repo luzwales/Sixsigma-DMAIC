@@ -12,6 +12,7 @@ import {
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // T-distribution critical values (two-tailed, α=0.05)
 const T_CRITICAL: Record<number, number> = {
@@ -28,12 +29,27 @@ const getTCritical = (df: number): number => {
   return 1.96;
 };
 
-const EXAMPLES = {
-  quality: { mean: "10.2", target: "10.0", std: "0.5", n: "30", label: "Kvalitetskontroll" },
-  process: { mean: "25.3", target: "25.0", std: "1.2", n: "15", label: "Processmätning" },
-};
+const getExamples = (isZh: boolean) => ({
+  quality: { 
+    mean: "10.2", 
+    target: "10.0", 
+    std: "0.5", 
+    n: "30", 
+    label: isZh ? "质量控制检验" : "Quality Control" 
+  },
+  process: { 
+    mean: "25.3", 
+    target: "25.0", 
+    std: "1.2", 
+    n: "15", 
+    label: isZh ? "工艺参数抽检" : "Process Sampling" 
+  },
+});
 
-export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sample t-test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-Sample t-Test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+  const EXAMPLES = getExamples(isZh);
   const [sampleMean, setSampleMean] = useState("");
   const [targetMean, setTargetMean] = useState("");
   const [stdDev, setStdDev] = useState("");
@@ -131,14 +147,16 @@ export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sampl
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1.5">
           <Label htmlFor="ttest-xbar" className="text-xs flex items-center gap-1">
-            Stickprovsmedel (X̄)
+            {isZh ? "样本均值 (X̄)" : "Sample Mean (X̄)"}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-xs">Genomsnittsvärdet av dina mätningar</p>
+                  <p className="text-xs">
+                    {isZh ? "实际测得的样本平均值" : "Average value of your measurements"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -154,7 +172,9 @@ export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sampl
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ttest-mu" className="text-xs">Målvärde (μ₀)</Label>
+          <Label htmlFor="ttest-mu" className="text-xs">
+            {isZh ? "检验目标值 (μ₀)" : "Target / Baseline (μ₀)"}
+          </Label>
           <Input
             id="ttest-mu"
             type="number"
@@ -166,7 +186,9 @@ export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sampl
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ttest-s" className="text-xs">Standardavvikelse (s)</Label>
+          <Label htmlFor="ttest-s" className="text-xs">
+            {isZh ? "样本标准差 (s)" : "Sample Std Dev (s)"}
+          </Label>
           <Input
             id="ttest-s"
             type="number"
@@ -178,7 +200,9 @@ export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sampl
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ttest-n" className="text-xs">Stickprovsstorlek (n)</Label>
+          <Label htmlFor="ttest-n" className="text-xs">
+            {isZh ? "样本量 (n ≥ 2)" : "Sample Size (n ≥ 2)"}
+          </Label>
           <Input
             id="ttest-n"
             type="number"
@@ -190,48 +214,54 @@ export function TTestCalculator({ toolId = "t-test-1sample", toolName = "1-sampl
           />
         </div>
       </div>
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna t-test</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "计算单样本 t 检验 (Calculate t-test)" : "Calculate 1-Sample t-Test"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">t-värde</div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "t 统计量 (t-statistic)" : "t-Statistic"}
+            </div>
             <div className="text-3xl font-bold font-mono">{result.t.toFixed(3)}</div>
-            <div className={`mt-2 inline-block px-3 py-1 rounded-full text-sm font-medium ${
+            <div className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold ${
               result.significant 
                 ? "bg-destructive/20 text-destructive" 
                 : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
             }`}>
               {result.significant 
-                ? "✗ Signifikant skillnad" 
-                : "✓ Ingen signifikant skillnad"}
+                ? (isZh ? "✗ 存在统计学显著差异 (拒绝 H₀, p < 0.05)" : "✗ Statistically Significant (Reject H₀, p < 0.05)") 
+                : (isZh ? "✓ 无显著差异 (接受 H₀, p > 0.05)" : "✓ No Significant Difference (Fail to Reject H₀, p > 0.05)")}
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">t-kritisk</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "临界值 (t-crit)" : "t-Critical"}</div>
               <div className="font-mono">±{result.tCritical.toFixed(3)}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">df</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "自由度 (df)" : "df (n-1)"}</div>
               <div className="font-mono">{result.df}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">p-värde</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "P 值估计" : "p-Value"}</div>
               <div className="font-mono">{result.pApprox}</div>
             </div>
           </div>
 
-          <div className="p-3 bg-muted/30 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">95% Konfidensintervall för μ</div>
-            <div className="font-mono text-sm">
+          <div className="p-3 bg-muted/30 rounded-lg border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "总体均值 μ 的 95% 双侧置信区间 (CI)" : "95% Confidence Interval for μ"}
+            </div>
+            <div className="font-mono text-sm font-semibold">
               [{result.ci.lower.toFixed(3)}, {result.ci.upper.toFixed(3)}]
             </div>
             <div className="text-xs text-muted-foreground mt-1">
               {result.ci.lower <= parseFloat(targetMean) && result.ci.upper >= parseFloat(targetMean)
-                ? "✓ Målvärdet ligger inom konfidensintervallet"
-                : "✗ Målvärdet ligger utanför konfidensintervallet"}
+                ? (isZh ? "✓ 目标均值落于置信区间内，符合工程要求" : "✓ Target mean falls inside confidence interval")
+                : (isZh ? "✗ 目标均值落在置信区间之外，过程均值发生显著漂移" : "✗ Target mean falls outside confidence interval")}
             </div>
           </div>
         </div>

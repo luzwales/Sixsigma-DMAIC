@@ -5,6 +5,8 @@ import { DataInput } from "./DataInput";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   ScatterChart,
   Scatter,
@@ -28,7 +30,10 @@ interface CorrelationResult {
   n: number;
 }
 
-export function CorrelationCalculator({ toolId = "correlation", toolName = "Korrelationsanalys", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function CorrelationCalculator({ toolId = "correlation", toolName = "Correlation & Regression", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [xValues, setXValues] = useState("");
   const [yValues, setYValues] = useState("");
   const [result, setResult] = useState<CorrelationResult | null>(null);
@@ -78,12 +83,12 @@ export function CorrelationCalculator({ toolId = "correlation", toolName = "Korr
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
-    let strength = "Inget";
+    let strength = isZh ? "无相关" : "None";
     const absR = Math.abs(r);
-    if (absR >= 0.9) strength = "Mycket starkt";
-    else if (absR >= 0.7) strength = "Starkt";
-    else if (absR >= 0.5) strength = "Måttligt";
-    else if (absR >= 0.3) strength = "Svagt";
+    if (absR >= 0.9) strength = isZh ? "极强线性相关" : "Very Strong";
+    else if (absR >= 0.7) strength = isZh ? "强线性相关" : "Strong";
+    else if (absR >= 0.5) strength = isZh ? "中等程度相关" : "Moderate";
+    else if (absR >= 0.3) strength = isZh ? "弱相关" : "Weak";
 
     setResult({ r, r2, strength, slope, intercept, n });
   };
@@ -103,10 +108,10 @@ export function CorrelationCalculator({ toolId = "correlation", toolName = "Korr
   };
 
   const getStrengthColor = (strength: string) => {
-    if (strength === "Mycket starkt") return "text-green-600 dark:text-green-400";
-    if (strength === "Starkt") return "text-emerald-600 dark:text-emerald-400";
-    if (strength === "Måttligt") return "text-yellow-600 dark:text-yellow-400";
-    if (strength === "Svagt") return "text-orange-600 dark:text-orange-400";
+    if (strength.includes("极强") || strength === "Very Strong") return "text-green-600 dark:text-green-400";
+    if (strength.includes("强") || strength === "Strong") return "text-emerald-600 dark:text-emerald-400";
+    if (strength.includes("中等") || strength === "Moderate") return "text-yellow-600 dark:text-yellow-400";
+    if (strength.includes("弱") || strength === "Weak") return "text-orange-600 dark:text-orange-400";
     return "text-muted-foreground";
   };
 
@@ -126,34 +131,33 @@ export function CorrelationCalculator({ toolId = "correlation", toolName = "Korr
   return (
     <div className="space-y-4 pt-2">
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" />
-          Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
       </div>
 
       <div className="space-y-3">
         <DataInput
-          label="X-värden"
+          label={isZh ? "自变量 X 样本数据" : "X Values (Independent)"}
           value={xValues}
           onChange={setXValues}
-          placeholder="1, 2, 3, 4, 5..."
+          placeholder="10, 15, 20, 25, 30..."
           exampleData={EXAMPLE_X}
-          helpText="Separera värden med komma eller klistra in från Excel"
+          helpText={isZh ? "数值间以逗号或空格分隔，亦可从 Excel 直接粘贴" : "Separate with commas or paste from Excel"}
         />
         <DataInput
-          label="Y-värden"
+          label={isZh ? "因变量 Y 测量数据" : "Y Values (Dependent)"}
           value={yValues}
           onChange={setYValues}
-          placeholder="2.1, 4.2, 5.8, 8.1, 9.9..."
+          placeholder="12.3, 18.1, 22.5, 27.8..."
           exampleData={EXAMPLE_Y}
-          helpText="Samma antal värden som X"
+          helpText={isZh ? "要求样本数量与 X 完全一致" : "Must have the same number of data points as X"}
         />
       </div>
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna korrelation</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "执行相关性与线性回归分析" : "Calculate Correlation & Regression"}
+      </Button>
 
       {scatterData.length >= 2 && (
-        <div className="h-48 w-full">
+        <div className="h-48 w-full border rounded-lg p-2 bg-muted/10">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -193,27 +197,31 @@ export function CorrelationCalculator({ toolId = "correlation", toolName = "Korr
       {result && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-muted/50 rounded-lg text-center">
-              <div className="text-xs text-muted-foreground">Pearson r</div>
+            <div className="p-3 bg-muted/50 rounded-lg text-center border">
+              <div className="text-xs text-muted-foreground">Pearson r ({isZh ? "相关系数" : "Correlation"})</div>
               <div className="text-2xl font-bold font-mono">{result.r.toFixed(3)}</div>
-              <div className={`text-xs ${getStrengthColor(result.strength)}`}>
-                {result.strength} {result.r >= 0 ? "positivt" : "negativt"}
+              <div className={`text-xs font-semibold ${getStrengthColor(result.strength)}`}>
+                {result.strength} ({result.r >= 0 ? (isZh ? "正相关" : "Positive") : (isZh ? "负相关" : "Negative")})
               </div>
             </div>
-            <div className="p-3 bg-muted/50 rounded-lg text-center">
-              <div className="text-xs text-muted-foreground">R² (förklaringsgrad)</div>
+            <div className="p-3 bg-muted/50 rounded-lg text-center border">
+              <div className="text-xs text-muted-foreground">R² ({isZh ? "决定系数 / 解释程度" : "Coefficient of Determination"})</div>
               <div className="text-2xl font-bold font-mono">{(result.r2 * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">av variationen förklaras</div>
+              <div className="text-xs text-muted-foreground">
+                {isZh ? "的过程变异由 X 驱动解释" : "of Y variance explained by X"}
+              </div>
             </div>
           </div>
 
-          <div className="p-3 bg-muted/30 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Regressionslinje</div>
-            <div className="font-mono text-sm">
-              Y = {result.slope.toFixed(4)}X {result.intercept >= 0 ? "+" : ""} {result.intercept.toFixed(4)}
+          <div className="p-3 bg-muted/30 rounded-lg border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "拟合线性回归方程 (Fitted Line Equation)" : "Fitted Regression Equation"}
+            </div>
+            <div className="font-mono text-sm font-semibold text-primary">
+              Y = {result.slope.toFixed(4)} * X {result.intercept >= 0 ? "+" : "-"} {Math.abs(result.intercept).toFixed(4)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              Baserat på {result.n} datapunkter
+              {isZh ? `基于 ${result.n} 组有效配对观测点数据计算` : `Based on ${result.n} paired data points`}
             </div>
           </div>
         </div>

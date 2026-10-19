@@ -6,6 +6,8 @@ import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Chi-square critical values (α=0.05)
 const CHI2_CRITICAL: Record<number, number> = {
@@ -21,7 +23,10 @@ const getChi2Critical = (df: number): number => {
   return df + Math.sqrt(2 * df); // rough approximation
 };
 
-export function ChiSquareCalculator({ toolId = "chi-square", toolName = "Chi-två-test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function ChiSquareCalculator({ toolId = "chi-square", toolName = "Chi-Square Test", phase = 3 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [tableData, setTableData] = useState("");
   const [result, setResult] = useState<{
     chi2: number; df: number; chi2Crit: number; significant: boolean;
@@ -91,47 +96,64 @@ export function ChiSquareCalculator({ toolId = "chi-square", toolName = "Chi-tv�
   return (
     <div className="space-y-4 pt-2">
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" /> Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs">Observerade frekvenser (en rad per kategori, kolumner separerade med mellanslag)</Label>
+        <Label className="text-xs">
+          {isZh ? "观测频数列联表 (每行一个分类属性，列数值以空格或逗号分隔)" : "Observed Frequencies (one row per category, space or comma separated)"}
+        </Label>
         <textarea
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring h-20"
-          placeholder="50 30 20&#10;35 45 20&#10;15 25 60"
+          placeholder={isZh ? "50 30 20\n35 45 20\n15 25 60" : "50 30 20\n35 45 20\n15 25 60"}
           value={tableData}
           onChange={(e) => setTableData(e.target.value)}
         />
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna χ²</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "执行卡方独立性检验 (Run Chi-Square Test)" : "Calculate Chi-Square (χ²)"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">χ²-värde</div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "卡方统计量检验值 (χ²)" : "Chi-Square Statistic (χ²)"}
+            </div>
             <div className="text-3xl font-bold font-mono">{result.chi2.toFixed(3)}</div>
-            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2">
-              {result.significant ? "✗ Signifikant samband" : "✓ Inget signifikant samband"}
+            <Badge variant={result.significant ? "destructive" : "default"} className="mt-2 text-xs">
+              {result.significant 
+                ? (isZh ? "✗ 属性变量间存在显著关联性 (拒绝独立性 H₀, p < 0.05)" : "✗ Significant Association (Reject Independence H₀)") 
+                : (isZh ? "✓ 变量之间相互独立 (无显著关联, 接受 H₀)" : "✓ Variables are Independent (Fail to Reject H₀)")}
             </Badge>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">df</div><div className="font-mono">{result.df}</div></div>
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">χ²-krit</div><div className="font-mono">{result.chi2Crit.toFixed(3)}</div></div>
-            <div className="p-2 bg-muted/30 rounded"><div className="text-xs text-muted-foreground">Tabell</div><div className="font-mono">{result.rows}×{result.cols}</div></div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "自由度 (df)" : "df (r-1)(c-1)"}</div>
+              <div className="font-mono">{result.df}</div>
+            </div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "临界值 (χ²-crit)" : "χ²-Critical"}</div>
+              <div className="font-mono">{result.chi2Crit.toFixed(3)}</div>
+            </div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "列联表维度" : "Contingency Table"}</div>
+              <div className="font-mono">{result.rows} × {result.cols}</div>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <p className="text-xs font-medium mb-1">Förväntade frekvenser:</p>
+          <div className="overflow-x-auto border rounded-lg p-2.5 bg-muted/20">
+            <p className="text-xs font-semibold mb-1.5 text-foreground">
+              {isZh ? "理论期望频数表 (Expected Frequencies):" : "Expected Frequencies:"}
+            </p>
             <table className="w-full text-xs font-mono">
               <tbody>
                 {result.expected.map((row, i) => (
-                  <tr key={i} className="border-b">
+                  <tr key={i} className="border-b last:border-none">
                     {row.map((e, j) => (
-                      <td key={j} className="p-1 text-center">{e.toFixed(1)}</td>
+                      <td key={j} className="p-1 text-center bg-background/50">{e.toFixed(1)}</td>
                     ))}
                   </tr>
                 ))}
