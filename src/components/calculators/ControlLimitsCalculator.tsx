@@ -72,7 +72,7 @@ interface ControlLimitResult {
   n?: number;
 }
 
-export function ControlLimitsCalculator({ toolId = "control-limits", toolName = "Styrgränser (SPC)", phase = 5 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function ControlLimitsCalculator({ toolId = "control-limits", toolName = "SPC Control Limits", phase = 5 }: { toolId?: string; toolName?: string; phase?: number }) {
   const { locale } = useLanguage();
   const isZh = locale === "zh";
 
@@ -111,8 +111,8 @@ export function ControlLimitsCalculator({ toolId = "control-limits", toolName = 
   const [subgroupSize, setSubgroupSize] = useState("5");
   const [result, setResult] = useState<ControlLimitResult | null>(null);
 
-  const effectiveToolId = passedToolId || `spc-${chartType}`;
-  const effectiveToolName = passedToolName || `Styrgränser (${CHART_CONFIGS[chartType].label})`;
+  const effectiveToolId = toolId || `spc-${chartType}`;
+  const effectiveToolName = toolName || (isZh ? `SPC 控制图 (${CHART_CONFIGS[chartType].label})` : `Control Limits (${CHART_CONFIGS[chartType].label})`);
 
   const handleLoad = useCallback((inputs: Record<string, unknown>) => {
     if (inputs.chartType) setChartType(inputs.chartType as ChartType);
