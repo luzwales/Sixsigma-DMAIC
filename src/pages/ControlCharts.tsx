@@ -387,7 +387,7 @@ export default function ControlCharts() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="sample" label={{ value: 'Stickprov', position: 'bottom', offset: -5 }} />
+              <XAxis dataKey="sample" label={{ value: isZh ? '样本序号' : 'Sample', position: 'bottom', offset: -5 }} />
               <YAxis label={{ value: yLabel, angle: -90, position: 'insideLeft' }} />
               <Tooltip 
                 contentStyle={{ 
@@ -522,16 +522,18 @@ export default function ControlCharts() {
           <TabsContent value="xbar-r">
             <Card>
               <CardHeader>
-                <CardTitle>X̄-R Styrdiagram</CardTitle>
+                <CardTitle>{isZh ? "X̄-R 均值与极差控制图" : "X̄-R Control Chart"}</CardTitle>
                 <CardDescription>
-                  Används för kontinuerliga data med delgrupper (2-10 mätningar per grupp). Övervakar både medelvärde och variation.
+                  {isZh 
+                    ? "适用于子组容量为 2~10 件的计量型连续数据，同时监控过程均值漂移与内部离散波动。" 
+                    : "For variable continuous data with subgroups (2-10). Monitors both process mean and dispersion."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för X̄-R styrdiagram:</span>
+                    <span>{isZh ? "预设测试情境 (X̄-R 控制图):" : "Load Test Scenarios (X̄-R):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -540,7 +542,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("xbar-r", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Stabil process (I kontroll)
+                      {isZh ? "受控稳态过程 (正常随机变异)" : "Stable Process (In Control)"}
                     </Button>
                     <Button
                       variant="outline"
@@ -548,14 +550,14 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("xbar-r", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Processförskjutning (Specialorsak / Larm)
+                      {isZh ? "过程均值漂移 (触发 WE 准则报警)" : "Process Shift (Out of Control Alarm)"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Delgruppsstorlek (n)</Label>
+                    <Label>{isZh ? "子组容量 (Subgroup Size n: 2-10)" : "Subgroup Size (n)"}</Label>
                     <Input
                       type="number"
                       min={2}
@@ -566,7 +568,7 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Data (en delgrupp per rad, värden separerade med komma eller mellanslag)</Label>
+                  <Label>{isZh ? "测量数据 (每行代表一个子组，数值间用逗号或空格隔开)" : "Data (one subgroup per row, separated by comma or space)"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1&#10;10.3, 10.6, 10.2, 10.5, 10.4&#10;10.1, 10.4, 10.5, 10.3, 10.2"
@@ -575,13 +577,13 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculateXbarR} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 X̄-R 控制图" : "Calculate X̄-R Chart"}
                 </Button>
 
                 {xbarChartData && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(xbarChartData.xbar, "X̄-diagram (Medelvärde)", "X̄", "xbar", weViolations['xbar'])}
-                    {renderControlChart(xbarChartData.r, "R-diagram (Variationsvidd)", "R", "r", weViolations['r'])}
+                    {renderControlChart(xbarChartData.xbar, isZh ? "X̄ 控制图 (均值)" : "X̄-Chart (Mean)", "X̄", "xbar", weViolations['xbar'])}
+                    {renderControlChart(xbarChartData.r, isZh ? "R 控制图 (极差波动)" : "R-Chart (Range)", "R", "r", weViolations['r'])}
                   </div>
                 )}
               </CardContent>
@@ -592,16 +594,18 @@ export default function ControlCharts() {
           <TabsContent value="i-mr">
             <Card>
               <CardHeader>
-                <CardTitle>I-MR Styrdiagram (Individuella värden)</CardTitle>
+                <CardTitle>{isZh ? "I-MR 单值与移动极差控制图" : "I-MR Control Chart (Individual & Moving Range)"}</CardTitle>
                 <CardDescription>
-                  Används för kontinuerliga data där endast en mätning görs åt gången. Perfekt för långa cykeltider eller dyra mätningar.
+                  {isZh 
+                    ? "适用于单件生产、破坏性检测或生产周期较长的连续测量数据。" 
+                    : "For continuous individual data points when subgrouping is not practical."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för I-MR styrdiagram:</span>
+                    <span>{isZh ? "预设测试情境 (I-MR 控制图):" : "Load Test Scenarios (I-MR):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -610,7 +614,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("i-mr", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Stabil process (Normalmätningar)
+                      {isZh ? "受控稳态测量 (正态随机)" : "Stable Process (Normal)"}
                     </Button>
                     <Button
                       variant="outline"
@@ -618,13 +622,13 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("i-mr", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Instabila spikar (Undantag / Larm)
+                      {isZh ? "出现尖锐异常尖峰 (特殊原因触发)" : "Unstable Spikes (Out of Control)"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Data (värden separerade med komma, mellanslag eller radbrytning)</Label>
+                  <Label>{isZh ? "连续测量数据 (数值以逗号、空格或换行分隔)" : "Data (values separated by comma, space or newline)"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1, 10.3, 10.6, 10.2"
@@ -633,13 +637,13 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculateIMR} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 I-MR 控制图" : "Calculate I-MR Chart"}
                 </Button>
 
                 {imrChartData && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(imrChartData.i, "I-diagram (Individuella värden)", "X", "i", weViolations['i'])}
-                    {renderControlChart(imrChartData.mr, "MR-diagram (Glidande variationsvidd)", "MR", "mr", weViolations['mr'])}
+                    {renderControlChart(imrChartData.i, isZh ? "I 单值控制图 (Individual)" : "I-Chart (Individual Values)", "X", "i", weViolations['i'])}
+                    {renderControlChart(imrChartData.mr, isZh ? "MR 移动极差控制图" : "MR-Chart (Moving Range)", "MR", "mr", weViolations['mr'])}
                   </div>
                 )}
               </CardContent>
@@ -650,16 +654,18 @@ export default function ControlCharts() {
           <TabsContent value="p-chart">
             <Card>
               <CardHeader>
-                <CardTitle>p-diagram (Andel defekta)</CardTitle>
+                <CardTitle>{isZh ? "p 控制图 (不合格品率)" : "p-Chart (Proportion Defective)"}</CardTitle>
                 <CardDescription>
-                  Används för attributdata där man räknar andelen defekta enheter i varje stickprov. Stickprovsstorleken är konstant.
+                  {isZh 
+                    ? "适用于计件型计数属性数据，监控每个检验样本中的不合格品比例。" 
+                    : "For attribute data tracking proportion of defective units in each sample."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för p-diagram (Andel defekta):</span>
+                    <span>{isZh ? "预设测试情境 (p 控制图):" : "Load Test Scenarios (p-Chart):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -668,7 +674,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("p-chart", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Låg och stabil felandel (~2%)
+                      {isZh ? "低且稳定的次品率 (~2%)" : "Low & Stable Defect Rate (~2%)"}
                     </Button>
                     <Button
                       variant="outline"
@@ -676,14 +682,14 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("p-chart", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Plötslig kvalitetsförsämring (Larm)
+                      {isZh ? "突发质量劣变失控 (超标报警)" : "Sudden Quality Deterioration (Alarm)"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Stickprovsstorlek (n)</Label>
+                    <Label>{isZh ? "检验样本容量 (Sample Size n)" : "Sample Size (n)"}</Label>
                     <Input
                       type="number"
                       min={1}
@@ -693,7 +699,7 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <Label>{isZh ? "每组不合格品数 (以逗号或空格隔开)" : "Defects per sample (separated by comma or newline)"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
@@ -702,12 +708,12 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculatePChart} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 p 控制图" : "Calculate p-Chart"}
                 </Button>
 
                 {pChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(pChartResult, "p-diagram (Andel defekta)", "p", "p", weViolations['p'])}
+                    {renderControlChart(pChartResult, isZh ? "p 控制图 (不合格率)" : "p-Chart (Proportion Defective)", "p", "p", weViolations['p'])}
                   </div>
                 )}
               </CardContent>
@@ -718,16 +724,18 @@ export default function ControlCharts() {
           <TabsContent value="np-chart">
             <Card>
               <CardHeader>
-                <CardTitle>np-diagram (Antal defekta)</CardTitle>
+                <CardTitle>{isZh ? "np 控制图 (不合格品数)" : "np-Chart (Defective Count)"}</CardTitle>
                 <CardDescription>
-                  Används för attributdata där man räknar antalet defekta enheter. Stickprovsstorleken är konstant. Skillnad mot p-diagram: visar absoluta tal istället för andelar.
+                  {isZh 
+                    ? "适用于恒定样本量下的不合格品绝对数量监控。" 
+                    : "For attribute data tracking absolute number of defective units in constant sample sizes."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för np-diagram (Antal defekta):</span>
+                    <span>{isZh ? "预设测试情境 (np 控制图):" : "Load Test Scenarios (np-Chart):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -736,7 +744,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("np-chart", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Konstant lågt antal defekta enheter
+                      {isZh ? "受控低不良数量" : "Stable Low Defect Count"}
                     </Button>
                     <Button
                       variant="outline"
@@ -744,14 +752,14 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("np-chart", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Processdrift och onormal spridning (Larm)
+                      {isZh ? "过程漂移与异常波动报警" : "Process Drift & High Alarm"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Stickprovsstorlek (n)</Label>
+                    <Label>{isZh ? "恒定样本容量 (Sample Size n)" : "Sample Size (n)"}</Label>
                     <Input
                       type="number"
                       min={1}
@@ -761,7 +769,7 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <Label>{isZh ? "每组不合格品件数 (以逗号或换行分隔)" : "Defect counts per sample (separated by comma or newline)"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
@@ -770,12 +778,12 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculateNpChart} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 np 控制图" : "Calculate np-Chart"}
                 </Button>
 
                 {npChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(npChartResult, "np-diagram (Antal defekta)", "np", "np", weViolations['np'])}
+                    {renderControlChart(npChartResult, isZh ? "np 控制图 (不合格品件数)" : "np-Chart (Defective Count)", "np", "np", weViolations['np'])}
                   </div>
                 )}
               </CardContent>
@@ -786,16 +794,18 @@ export default function ControlCharts() {
           <TabsContent value="c-chart">
             <Card>
               <CardHeader>
-                <CardTitle>c-diagram (Antal fel)</CardTitle>
+                <CardTitle>{isZh ? "c 控制图 (单位缺陷数)" : "c-Chart (Defects per Unit)"}</CardTitle>
                 <CardDescription>
-                  Används för attributdata där man räknar antal fel per enhet. Enheten är konstant (t.ex. fel per produkt, per dag, per m²).
+                  {isZh 
+                    ? "适用于恒定检验面积或固定单位上的缺陷总数监控 (如：每平米布匹瑕疵点数、每台车身划痕数)。" 
+                    : "For Poisson defect counts when the inspection unit area or sample size is constant."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för c-diagram (Antal fel):</span>
+                    <span>{isZh ? "预设测试情境 (c 控制图):" : "Load Test Scenarios (c-Chart):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -804,7 +814,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("c-chart", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Stabil tillverkningsyta (Få slumpmässiga fel)
+                      {isZh ? "受控稳态产品表面缺陷数" : "Stable Surface Defect Count"}
                     </Button>
                     <Button
                       variant="outline"
@@ -812,13 +822,13 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("c-chart", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Kvalitetssvacka / Skenande antal fel (Larm)
+                      {isZh ? "缺陷频发失控 (超限报警)" : "Defect Surge Alarm"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Antal fel per enhet (separerade med komma eller radbrytning)</Label>
+                  <Label>{isZh ? "每单位缺陷数量 (逗号或换行分隔)" : "Defects per unit (separated by comma or newline)"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 2"
@@ -827,12 +837,12 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculateCChart} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 c 控制图" : "Calculate c-Chart"}
                 </Button>
 
                 {cChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(cChartResult, "c-diagram (Antal fel)", "c", "c", weViolations['c'])}
+                    {renderControlChart(cChartResult, isZh ? "c 控制图 (缺陷数)" : "c-Chart (Defect Count)", "c", "c", weViolations['c'])}
                   </div>
                 )}
               </CardContent>
@@ -843,16 +853,18 @@ export default function ControlCharts() {
           <TabsContent value="u-chart">
             <Card>
               <CardHeader>
-                <CardTitle>u-diagram (Fel per enhet)</CardTitle>
+                <CardTitle>{isZh ? "u 控制图 (单位平均缺陷数)" : "u-Chart (Defects per Inspection Unit)"}</CardTitle>
                 <CardDescription>
-                  Används för attributdata där man räknar fel per enhet och enhetsstorleken varierar. Varje rad: "antal fel, antal enheter".
+                  {isZh 
+                    ? "适用于可变检验样本面积或批次容量下的单位平均缺陷率监控。" 
+                    : "For variable inspection unit sizes tracking average defect rate per unit."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted/40 border border-primary/10 rounded-xl p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    <span>Ladda testscenarier för u-diagram (Fel per enhet):</span>
+                    <span>{isZh ? "预设测试情境 (u 控制图):" : "Load Test Scenarios (u-Chart):"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -861,7 +873,7 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("u-chart", "stable")}
                       className="text-xs h-8 bg-background border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-950 dark:text-green-300"
                     >
-                      Varierande batcher (Stabil felkvot per enhet)
+                      {isZh ? "不同批次规格受控稳态" : "Variable Batches (Stable Ratio)"}
                     </Button>
                     <Button
                       variant="outline"
@@ -869,13 +881,13 @@ export default function ControlCharts() {
                       onClick={() => loadScenario("u-chart", "unstable")}
                       className="text-xs h-8 bg-background border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-950 dark:text-red-300"
                     >
-                      Batchproblem (Skenande felkvot / Larm)
+                      {isZh ? "批次缺陷突增告警" : "Batch Defect Spikes (Alarm)"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                  <Label>{isZh ? "数据格式 (每行代表一组：'缺陷数, 检验单位数')" : "Data (one line per sample: 'defects, units')"}</Label>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="12, 10&#10;8, 8&#10;15, 12&#10;10, 10&#10;6, 5"
@@ -884,12 +896,12 @@ export default function ControlCharts() {
                   />
                 </div>
                 <Button onClick={calculateUChart} className="w-full md:w-auto">
-                  Beräkna styrdiagram
+                  {isZh ? "绘制并分析 u 控制图" : "Calculate u-Chart"}
                 </Button>
 
                 {uChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(uChartResult, "u-diagram (Fel per enhet)", "u", "u", weViolations['u'])}
+                    {renderControlChart(uChartResult, isZh ? "u 控制图 (单位缺陷率)" : "u-Chart (Defects per Unit)", "u", "u", weViolations['u'])}
                   </div>
                 )}
               </CardContent>

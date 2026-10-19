@@ -8,11 +8,15 @@ import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
-export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris", phase = 4 }: Props) {
+export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh Matrix", phase = 4 }: Props) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [criteria, setCriteria] = useState<{ id: string; name: string; weight: number }[]>([]);
   const [alternatives, setAlternatives] = useState<string[]>([]);
   const [scores, setScores] = useState<Record<string, Record<string, number>>>({});
@@ -28,7 +32,6 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
       const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
       setCriteria(newCriteria);
       if (Array.isArray(a)) setAlternatives(a.map(String));
-      // Remap scores from old criterion IDs to new ones by index
       if (s && Array.isArray(c)) {
         const oldIds = c.map(cr => cr.id);
         const newScores: Record<string, Record<string, number>> = {};
@@ -59,14 +62,24 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   };
 
   const loadExample = () => {
-    const crits = [
-      { name: "Kostnad", weight: 3 },
-      { name: "Genomförbarhet", weight: 2 },
-      { name: "Effekt på cykeltid", weight: 3 },
-      { name: "Kvalitet", weight: 2 },
-      { name: "Tid till implementation", weight: 1 },
+    const crits = isZh ? [
+      { name: "实施与改造成本", weight: 3 },
+      { name: "工程可行性与落地难度", weight: 2 },
+      { name: "对生产节拍/周转时间的削减", weight: 3 },
+      { name: "产品质量合格率提升", weight: 2 },
+      { name: "上线交付周期", weight: 1 },
+    ].map(c => ({ id: crypto.randomUUID(), ...c })) : [
+      { name: "Implementation Cost", weight: 3 },
+      { name: "Technical Feasibility", weight: 2 },
+      { name: "Cycle Time Reduction", weight: 3 },
+      { name: "Quality Yield Improvement", weight: 2 },
+      { name: "Time to Deployment", weight: 1 },
     ].map(c => ({ id: crypto.randomUUID(), ...c }));
-    const alts = ["Automatisera kreditkontroll", "Anställ extra plockare", "Outsource transport"];
+
+    const alts = isZh 
+      ? ["方案 A: 改造自动视觉检测伺服", "方案 B: 增派人工复检站位", "方案 C: 委外精加工工序"] 
+      : ["Option A: Automated Vision Inspection", "Option B: Additional QC Station", "Option C: Outsource Machining"];
+
     const sc: Record<string, Record<string, number>> = {};
     sc[crits[0].id] = { [alts[0]]: 1, [alts[1]]: -1, [alts[2]]: 0 };
     sc[crits[1].id] = { [alts[0]]: 1, [alts[1]]: 1, [alts[2]]: 0 };
@@ -77,9 +90,6 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
     setAlternatives(alts);
     setScores(sc);
   };
-
-
-
 
   const getTotal = (alt: string) => criteria.reduce((sum, c) => sum + (scores[c.id]?.[alt] || 0) * c.weight, 0);
   const hasResult = criteria.length > 0 && alternatives.length > 0;
@@ -92,18 +102,42 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label className="text-xs font-medium">Kriterier</Label>
+          <Label className="text-xs font-medium">
+            {isZh ? "评估评价准则 (Criteria & Weight)" : "Evaluation Criteria"}
+          </Label>
           <div className="flex gap-1">
-            <Input value={criterionName} onChange={e => setCriterionName(e.target.value)} placeholder="Kriterium" className="text-sm flex-1 min-w-0" />
-            <Input type="number" value={criterionWeight} onChange={e => setCriterionWeight(e.target.value)} placeholder="Vikt" className="text-sm w-14" />
-            <Button size="sm" onClick={addCriterion} disabled={!criterionName.trim()} className="shrink-0"><Plus className="h-3 w-3" /></Button>
+            <Input 
+              value={criterionName} 
+              onChange={e => setCriterionName(e.target.value)} 
+              placeholder={isZh ? "例如：成本、质量、周期..." : "Criteria name..."} 
+              className="text-sm flex-1 min-w-0" 
+            />
+            <Input 
+              type="number" 
+              value={criterionWeight} 
+              onChange={e => setCriterionWeight(e.target.value)} 
+              placeholder={isZh ? "权重" : "Weight"} 
+              className="text-sm w-16" 
+            />
+            <Button size="sm" onClick={addCriterion} disabled={!criterionName.trim()} className="shrink-0">
+              <Plus className="h-3 w-3" />
+            </Button>
           </div>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs font-medium">Alternativ</Label>
+          <Label className="text-xs font-medium">
+            {isZh ? "备选改善方案 (Candidate Alternatives)" : "Candidate Solutions"}
+          </Label>
           <div className="flex gap-1">
-            <Input value={altName} onChange={e => setAltName(e.target.value)} placeholder="Lösning A" className="text-sm flex-1 min-w-0" />
-            <Button size="sm" onClick={addAlternative} disabled={!altName.trim()} className="shrink-0"><Plus className="h-3 w-3" /></Button>
+            <Input 
+              value={altName} 
+              onChange={e => setAltName(e.target.value)} 
+              placeholder={isZh ? "例如：方案 A、自动化工装..." : "Alternative name..."} 
+              className="text-sm flex-1 min-w-0" 
+            />
+            <Button size="sm" onClick={addAlternative} disabled={!altName.trim()} className="shrink-0">
+              <Plus className="h-3 w-3" />
+            </Button>
           </div>
         </div>
       </div>
@@ -114,12 +148,12 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
             <table className="w-full text-xs min-w-[360px]">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="p-1.5 text-left">Kriterium</th>
-                  <th className="p-1.5 text-center w-10">Vikt</th>
+                  <th className="p-1.5 text-left">{isZh ? "评估准则" : "Criterion"}</th>
+                  <th className="p-1.5 text-center w-12">{isZh ? "权重" : "Weight"}</th>
                   {alternatives.map(alt => (
                     <th key={alt} className="p-1.5 text-center">
                       <div className="flex items-center justify-center gap-0.5">
-                        <span className="truncate max-w-[60px]">{alt}</span>
+                        <span className="truncate max-w-[80px] font-medium">{alt}</span>
                         <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => setAlternatives(alternatives.filter(a => a !== alt))}><Trash2 className="h-2.5 w-2.5" /></Button>
                       </div>
                     </th>
@@ -135,12 +169,12 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
                         <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => setCriteria(criteria.filter(x => x.id !== c.id))}><Trash2 className="h-2.5 w-2.5" /></Button>
                       </div>
                     </td>
-                    <td className="p-1.5 text-center text-muted-foreground">{c.weight}</td>
+                    <td className="p-1.5 text-center text-muted-foreground font-mono">{c.weight}</td>
                     {alternatives.map(alt => (
                       <td key={alt} className="p-1.5 text-center">
                         <div className="flex justify-center gap-0.5">
                           {[-1, 0, 1].map(s => (
-                            <button key={s} onClick={() => setScore(c.id, alt, s)} className={`w-6 h-6 rounded text-[10px] border transition-colors ${(scores[c.id]?.[alt] ?? 0) === s ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                            <button key={s} onClick={() => setScore(c.id, alt, s)} className={`w-6 h-6 rounded text-[10px] border transition-colors ${(scores[c.id]?.[alt] ?? 0) === s ? "bg-primary text-primary-foreground font-bold" : "hover:bg-muted"}`}>
                               {s > 0 ? "+" : s < 0 ? "−" : "S"}
                             </button>
                           ))}
@@ -149,11 +183,11 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
                     ))}
                   </tr>
                 ))}
-                <tr className="border-t bg-muted/30 font-medium">
-                  <td className="p-1.5">Totalpoäng</td>
-                  <td className="p-1.5"></td>
+                <tr className="border-t bg-muted/40 font-semibold">
+                  <td className="p-2">{isZh ? "综合加权总分 (Total Score)" : "Weighted Total Score"}</td>
+                  <td className="p-2"></td>
                   {alternatives.map(alt => (
-                    <td key={alt} className={`p-1.5 text-center text-sm ${alt === winner ? "text-primary font-bold" : ""}`}>
+                    <td key={alt} className={`p-2 text-center text-sm font-mono ${alt === winner ? "text-primary font-bold bg-primary/10" : ""}`}>
                       {getTotal(alt).toFixed(1)}{alt === winner && " 🏆"}
                     </td>
                   ))}
@@ -161,7 +195,9 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
               </tbody>
             </table>
           </div>
-          <div className="text-xs text-muted-foreground">+ = Bättre än referens, S = Samma, − = Sämre. Poäng multipliceras med vikt.</div>
+          <div className="text-xs text-muted-foreground p-1">
+            💡 {isZh ? "+ = 优于基准 (+1分), S = 与基准持平 (0分), − = 差于基准 (-1分)。总分 = 评分 × 权重加总。" : "+ = Better than baseline (+1), S = Same (0), − = Worse (-1). Total = Sum of (Score × Weight)."}
+          </div>
         </>
       )}
 

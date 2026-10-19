@@ -100,7 +100,11 @@ export default function VSM() {
     setCustomerDemand(String(template.customerDemand));
     setShiftHours(String(template.shiftHours));
     setSteps(template.steps);
-    toast.success(`Laddade ${type === "manufacturing" ? "Tillverkningsmall" : "Administrativ processmall"}!`);
+    toast.success(
+      isZh 
+        ? `已成功加载${type === "manufacturing" ? "离散制造装配产线模版" : "行政事务审批流模版"}！` 
+        : `Loaded ${type === "manufacturing" ? "Manufacturing Template" : "Administrative Process Template"}!`
+    );
   };
 
   const addStep = () => {
@@ -689,42 +693,54 @@ export default function VSM() {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 pt-4">
                     
                     <div className="bg-muted/10 border p-4 rounded-xl text-center">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Process Lead Time (PLT)</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                        {isZh ? "流程制造周期 (PLT)" : "Process Lead Time (PLT)"}
+                      </div>
                       <div className="text-3xl font-black font-sans leading-none mb-1 text-amber-600 dark:text-amber-400">
-                        {totalLeadTimeDays.toFixed(1)}d
+                        {totalLeadTimeDays.toFixed(1)}{isZh ? "天" : "d"}
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        Totalt {(totalLeadTimeSec / 3600).toFixed(0)} arbetstimmar i flödet
+                        {isZh ? `全流程周转合计约 ${(totalLeadTimeSec / 3600).toFixed(0)} 工时` : `Total ${(totalLeadTimeSec / 3600).toFixed(0)} working hours in flow`}
                       </p>
                     </div>
 
                     <div className="bg-muted/10 border p-4 rounded-xl text-center">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Värdeskapande Tid (VA)</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                        {isZh ? "纯增值创造工时 (VA)" : "Value-Added Time (VA)"}
+                      </div>
                       <div className="text-3xl font-black font-sans leading-none mb-1 text-primary">
-                        {totalVATimeSeconds.toFixed(0)}s
+                        {totalVATimeSeconds.toFixed(0)}{isZh ? "秒" : "s"}
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        Summan av alla förädlande operationer
+                        {isZh ? "所有物理加工与增值工序耗时总和" : "Total sum of all processing operations"}
                       </p>
                     </div>
 
                     <div className="bg-muted/10 border p-4 rounded-xl text-center">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Icke-Värdeskapande Tid</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                        {isZh ? "非增值停滞时间 (NVA)" : "Non-Value Added Time (NVA)"}
+                      </div>
                       <div className="text-3xl font-black font-sans leading-none mb-1 text-rose-500">
-                        {(totalNVATimeSeconds / 3600).toFixed(1)}h
+                        {(totalNVATimeSeconds / 3600).toFixed(1)}{isZh ? "小时" : "h"}
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        Lagerledtid, köande och väntande
+                        {isZh ? "工序间搬运、在制品排队与等待停滞" : "WIP inventory, batch queuing and waiting"}
                       </p>
                     </div>
 
                     <div className="bg-muted/10 border p-4 rounded-xl text-center">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Flödeseffektivitet (PCE)</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                        {isZh ? "过程循环效率 (PCE)" : "Process Cycle Efficiency (PCE)"}
+                      </div>
                       <div className="text-3xl font-black font-sans leading-none mb-1 text-emerald-600 dark:text-emerald-400">
                         {processCycleEfficiency.toFixed(2)}%
                       </div>
                       <p className="text-[10px] text-muted-foreground">
-                        {processCycleEfficiency < 5 ? "🔴 Mycket låg (Slöseri!)" : processCycleEfficiency < 15 ? "🟡 Genomsnittlig" : "🟢 Världsklass (&gt;15%)"}
+                        {processCycleEfficiency < 5 
+                          ? (isZh ? "🔴 周转极低 (浪费严重，需精益突破)" : "🔴 Very Low (High Waste)") 
+                          : processCycleEfficiency < 15 
+                          ? (isZh ? "🟡 行业平均水平" : "🟡 Average Efficiency") 
+                          : (isZh ? "🟢 精益标杆水平 (>15%)" : "🟢 World Class (>15%)")}
                       </p>
                     </div>
 

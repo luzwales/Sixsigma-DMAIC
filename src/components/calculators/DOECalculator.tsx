@@ -12,6 +12,8 @@ import {
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   Table,
   TableBody,
@@ -27,13 +29,20 @@ interface Factor {
   highLevel: string;
 }
 
-const DEFAULT_FACTORS: Factor[] = [
-  { name: "Temperatur", lowLevel: "20°C", highLevel: "30°C" },
-  { name: "Tryck", lowLevel: "1 bar", highLevel: "2 bar" },
-  { name: "Tid", lowLevel: "5 min", highLevel: "10 min" },
+const getFactors = (isZh: boolean): Factor[] => isZh ? [
+  { name: "模具温度", lowLevel: "180°C", highLevel: "220°C" },
+  { name: "注射压力", lowLevel: "80 bar", highLevel: "120 bar" },
+  { name: "保压时间", lowLevel: "4 s", highLevel: "8 s" },
+] : [
+  { name: "Temperature", lowLevel: "20°C", highLevel: "30°C" },
+  { name: "Pressure", lowLevel: "1 bar", highLevel: "2 bar" },
+  { name: "Cycle Time", lowLevel: "5 min", highLevel: "10 min" },
 ];
 
-export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimentplanering", phase = 4 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experiment Design", phase = 4 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [factors, setFactors] = useState<Factor[]>([
     { name: "", lowLevel: "", highLevel: "" },
     { name: "", lowLevel: "", highLevel: "" },
@@ -54,7 +63,7 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
-    setFactors(DEFAULT_FACTORS);
+    setFactors(getFactors(isZh));
     setResult(null);
   };
 
@@ -89,9 +98,9 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
 
     // Determine resolution for fractional designs
     let resolution = "";
-    if (k <= 3) resolution = "Full (alla interaktioner studerbara)";
-    else if (k <= 5) resolution = "IV (tvåfaktorsinteraktioner konfunderas)";
-    else resolution = "III (huvudeffekter konfunderas med interaktioner)";
+    if (k <= 3) resolution = isZh ? "全因子设计 (可独立评估全部主效应及高阶交互作用)" : "Full (All interactions can be estimated)";
+    else if (k <= 5) resolution = isZh ? "分辨度 IV (主效应与双因子交互混杂独立，双因子间相互混杂)" : "Resolution IV (Main effects clear of 2-factor interactions)";
+    else resolution = isZh ? "分辨度 III (主效应与双因子交互作用混杂，需谨慎筛选)" : "Resolution III (Main effects confounded with 2-factor interactions)";
 
     setResult({ fullRuns, halfRuns, quarterRuns, resolution });
   };
@@ -130,10 +139,7 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
   return (
     <div className="space-y-4 pt-2">
       <div className="flex justify-between items-center">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" />
-          Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
         <Button 
           variant="outline" 
           size="sm" 
@@ -142,7 +148,7 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
           disabled={factors.length >= 8}
         >
           <Plus className="h-3 w-3" />
-          Lägg till faktor
+          {isZh ? "添加因子" : "Add Factor"}
         </Button>
       </div>
 
@@ -150,16 +156,16 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
         {factors.map((factor, index) => (
           <div key={index} className="flex gap-2 items-end">
             <div className="flex-1 space-y-1">
-              <Label className="text-xs">Faktor {index + 1}</Label>
+              <Label className="text-xs">{isZh ? `试验因子 ${index + 1}` : `Factor ${index + 1}`}</Label>
               <Input
-                placeholder={`Faktor ${index + 1}`}
+                placeholder={isZh ? `因子 ${index + 1} 名称` : `Factor ${index + 1} Name`}
                 value={factor.name}
                 onChange={(e) => updateFactor(index, "name", e.target.value)}
                 className="h-8 text-sm"
               />
             </div>
-            <div className="w-20 space-y-1">
-              <Label className="text-xs">Låg (-)</Label>
+            <div className="w-24 space-y-1">
+              <Label className="text-xs">{isZh ? "低水平 (-)" : "Low (-)"}</Label>
               <Input
                 placeholder="-"
                 value={factor.lowLevel}
@@ -167,8 +173,8 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
                 className="h-8 text-sm"
               />
             </div>
-            <div className="w-20 space-y-1">
-              <Label className="text-xs">Hög (+)</Label>
+            <div className="w-24 space-y-1">
+              <Label className="text-xs">{isZh ? "高水平 (+)" : "High (+)"}</Label>
               <Input
                 placeholder="+"
                 value={factor.highLevel}
@@ -193,14 +199,16 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
       <div className="flex gap-3 items-end">
         <div className="flex-1 space-y-1.5">
           <Label htmlFor="doe-levels" className="text-xs flex items-center gap-1">
-            Nivåer per faktor
+            {isZh ? "每个因子的水平数 (Levels)" : "Levels per Factor"}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="h-3 w-3 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-xs">2 nivåer: screening, 3 nivåer: optimering</p>
+                  <p className="text-xs">
+                    {isZh ? "2水平：筛选关键因子；3水平：响应曲面优化非线性曲率" : "2 levels: screening; 3 levels: surface optimization"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -211,66 +219,72 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
             onChange={(e) => setLevels(e.target.value)}
             className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
           >
-            <option value="2">2 nivåer (screening)</option>
-            <option value="3">3 nivåer (optimering)</option>
+            <option value="2">{isZh ? "2 水平 (经典全/部分析因筛选)" : "2 Levels (Screening)"}</option>
+            <option value="3">{isZh ? "3 水平 (含中心点曲率与响应面优化)" : "3 Levels (Optimization)"}</option>
           </select>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {k} faktorer
+        <div className="text-sm text-muted-foreground font-mono">
+          {k} {isZh ? "个因子" : "factors"}
         </div>
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna designalternativ</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "核算试验运行方案与正交阵 (Calculate DOE Design)" : "Calculate Design Options"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-            <div className="flex justify-between items-center p-2 bg-background rounded border-2 border-primary/30">
+          <div className="p-4 bg-muted/50 rounded-lg space-y-3 border">
+            <div className="flex justify-between items-center p-2.5 bg-background rounded-lg border-2 border-primary/30">
               <div>
-                <span className="text-sm font-medium">Full faktoriell</span>
+                <span className="text-sm font-semibold">{isZh ? "全析因设计 (Full Factorial)" : "Full Factorial"}</span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="h-3 w-3 text-muted-foreground ml-1 inline" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-xs">Alla kombinationer testas - bäst precision</p>
+                      <p className="text-xs">
+                        {isZh ? "遍历所有水平组合，信息量最完整且无混杂" : "All combinations tested - maximum precision without confounding"}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <span className="font-bold text-lg">{result.fullRuns} körningar</span>
+              <span className="font-bold text-lg text-primary">{result.fullRuns} {isZh ? "次试验" : "runs"}</span>
             </div>
             
-            <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+            <div className="flex justify-between items-center p-2 bg-muted/30 rounded border">
               <div>
-                <span className="text-sm">Halv fraktionell (2^{k-1})</span>
+                <span className="text-sm font-medium">{isZh ? `半析因部分试验 (1/2 Fraction 2^${k-1})` : `1/2 Fractional (2^${k-1})`}</span>
               </div>
-              <span className="font-bold">{result.halfRuns} körningar</span>
+              <span className="font-bold">{result.halfRuns} {isZh ? "次试验" : "runs"}</span>
             </div>
             
             {result.quarterRuns > 0 && (
-              <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
+              <div className="flex justify-between items-center p-2 bg-muted/30 rounded border">
                 <div>
-                  <span className="text-sm">Kvarts fraktionell (2^{k-2})</span>
+                  <span className="text-sm font-medium">{isZh ? `1/4 部分析因试验 (1/4 Fraction 2^${k-2})` : `1/4 Fractional (2^${k-2})`}</span>
                 </div>
-                <span className="font-bold">{result.quarterRuns} körningar</span>
+                <span className="font-bold">{result.quarterRuns} {isZh ? "次试验" : "runs"}</span>
               </div>
             )}
           </div>
 
-          <div className="p-3 bg-muted/30 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Resolution (fraktionell)</div>
-            <div className="text-sm">{result.resolution}</div>
+          <div className="p-3 bg-muted/30 rounded-lg border">
+            <div className="text-xs text-muted-foreground mb-1">{isZh ? "设计分辨度评估 (Resolution)" : "Resolution (Fractional)"}</div>
+            <div className="text-sm font-medium text-foreground">{result.resolution}</div>
           </div>
 
           {designMatrix && designMatrix.length <= 16 && (
-            <div className="overflow-x-auto">
-              <div className="text-xs text-muted-foreground mb-2">Designmatris (förhandsvisning)</div>
+            <div className="overflow-x-auto border rounded-lg p-2.5 bg-muted/10">
+              <div className="text-xs font-semibold text-muted-foreground mb-2">
+                {isZh ? "标准正交试验设计矩阵预览 (Design Matrix Preview)" : "Design Matrix (Preview)"}
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12 text-xs">Kör</TableHead>
+                    <TableHead className="w-16 text-xs">{isZh ? "试验序号" : "Run"}</TableHead>
                     {factors.slice(0, k).map((f, i) => (
                       <TableHead key={i} className="text-xs text-center">
                         {f.name || `F${i + 1}`}
@@ -281,10 +295,10 @@ export function DOECalculator({ toolId = "doe-basics", toolName = "DOE Experimen
                 <TableBody>
                   {designMatrix.map((row, i) => (
                     <TableRow key={i}>
-                      <TableCell className="text-xs font-mono">{i + 1}</TableCell>
+                      <TableCell className="text-xs font-mono font-medium">{i + 1}</TableCell>
                       {row.map((cell, j) => (
-                        <TableCell key={j} className={`text-center font-mono ${
-                          cell === "+" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                        <TableCell key={j} className={`text-center font-mono font-bold ${
+                          cell === "+" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                         }`}>
                           {cell}
                         </TableCell>

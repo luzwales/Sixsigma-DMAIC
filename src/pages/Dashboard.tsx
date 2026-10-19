@@ -13,6 +13,7 @@ import {
   Search, Filter, ArrowUpRight, Coins, List, Calendar
 } from "lucide-react";
 import { phases } from "@/data/dmaic-tools";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, Cell, AreaChart, Area
@@ -79,6 +80,9 @@ function formatCurrency(val: number | null): string {
 }
 
 export default function Dashboard() {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [tollgateProgress, setTollgateProgress] = useState<Record<string, TollgateProgress>>({});
   const [allTollgateItems, setAllTollgateItems] = useState<any[]>([]);
@@ -355,17 +359,23 @@ export default function Dashboard() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">
-                    Portfolio
+                    {isZh ? "项目组合" : "Portfolio"}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Uppdaterad idag</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {isZh ? "数据已实时同步" : "Updated Realtime"}
+                  </p>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-1">Projektportfölj</h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">Din realtidsöversikt över DMAIC-metodik, KPI:er och riskhantering.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-1">
+                  {isZh ? "六西格玛项目驾驶舱" : "DMAIC Project Portfolio"}
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+                  {isZh ? "企业级项目全景看板、DMAIC 阶段门禁追踪、财务收益核算与 FMEA 风险雷达。" : "Real-time overview of DMAIC methodology, KPI tracking, and project risks."}
+                </p>
               </div>
               <Button asChild className="shrink-0 font-medium">
                 <Link to="/projects">
-                  Hantera projekt <ArrowRight className="h-4 w-4 ml-2" />
+                  {isZh ? "管理与创建项目" : "Manage Projects"} <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
             </div>
@@ -379,10 +389,10 @@ export default function Dashboard() {
                   <div className="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
                     <FolderOpen className="h-5 w-5" />
                   </div>
-                  <Badge variant="secondary" className="text-[10px] font-mono font-medium">Totalt</Badge>
+                  <Badge variant="secondary" className="text-[10px] font-mono font-medium">{isZh ? "立项总计" : "Total"}</Badge>
                 </div>
                 <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{projects.length}</div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Registrerade projekt</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">{isZh ? "已登记项目数" : "Registered Projects"}</p>
               </div>
 
               {/* Card 2: Aktiva */}
@@ -394,7 +404,7 @@ export default function Dashboard() {
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 </div>
                 <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{activeProjects.length}</div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Under genomförande</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">{isZh ? "在研攻坚推进中" : "In Progress"}</p>
               </div>
 
               {/* Card 3: Avslutade */}
@@ -404,11 +414,11 @@ export default function Dashboard() {
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-100 dark:text-emerald-400 dark:border-emerald-950">
-                    {projects.length > 0 ? Math.round((completedProjects.length / projects.length) * 100) : 0}% klar
+                    {projects.length > 0 ? Math.round((completedProjects.length / projects.length) * 100) : 0}% {isZh ? "完成率" : "Done"}
                   </Badge>
                 </div>
                 <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{completedProjects.length}</div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Säkrade & avslutade</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">{isZh ? "已验收固化结项" : "Completed"}</p>
               </div>
 
               {/* Card 4: Besparingar */}
@@ -417,19 +427,19 @@ export default function Dashboard() {
                   <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:scale-110 transition-transform">
                     <Coins className="h-5 w-5" />
                   </div>
-                  <Badge variant="outline" className="text-[9px] text-indigo-600 border-indigo-100 dark:text-indigo-300 dark:border-indigo-950/60">SEK</Badge>
+                  <Badge variant="outline" className="text-[9px] text-indigo-600 border-indigo-100 dark:text-indigo-300 dark:border-indigo-950/60">{isZh ? "收益" : "SAVINGS"}</Badge>
                 </div>
                 <div className="text-xl font-extrabold tracking-tight text-indigo-600 dark:text-indigo-400 truncate" title={`Faktisk: ${formatCurrency(totalActualSavings)} | Uppskattad: ${formatCurrency(totalEstimatedSavings)}`}>
                   {formatCurrency(totalActualSavings + totalEstimatedSavings)}
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium mb-1">Besparingskalkyl (Totalt)</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium mb-1">{isZh ? "财务收益总核算" : "Financial Impact"}</p>
                 <div className="flex flex-col gap-0.5 text-[10px] text-slate-500 border-t border-slate-50 dark:border-slate-800/30 pt-1.5">
                   <div className="flex justify-between items-center">
-                    <span>Faktisk besparing:</span>
+                    <span>{isZh ? "已产生收益:" : "Actual Savings:"}</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">{formatCurrency(totalActualSavings)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span>Mål/Uppskattad:</span>
+                    <span>{isZh ? "预计年化收益:" : "Estimated Goal:"}</span>
                     <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">{formatCurrency(totalEstimatedSavings)}</span>
                   </div>
                 </div>
@@ -595,9 +605,11 @@ export default function Dashboard() {
                     <div className="absolute right-0 top-0 translate-x-[15%] -translate-y-[15%] w-24 h-24 bg-amber-500/5 dark:bg-amber-500/2 rounded-full pointer-events-none"></div>
                     <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                       <AlertTriangle className="h-4 w-4 shrink-0" />
-                      <h4 className="font-bold text-sm">Stagnerade projekt (åtgärd krävs)</h4>
+                      <h4 className="font-bold text-sm">{isZh ? "滞后停滞项目预警 (需跟进推进)" : "Stagnant Projects (Action Required)"}</h4>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Följande pågående projekt har legat orörda i mer än 14 dagar.</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {isZh ? "以下在研项目已连续超过 14 天无更新记录，请核查阶段门禁阻塞点。" : "The following active projects have been untouched for more than 14 days."}
+                    </p>
                     <div className="space-y-2">
                       {stagnantProjects.map(p => {
                         const days = daysSince(p.updated_at);
@@ -614,7 +626,7 @@ export default function Dashboard() {
                             </div>
                             <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md flex items-center gap-1 font-mono">
                               <Clock className="w-3 h-3" />
-                              {days} dagar sedan
+                              {days} {isZh ? "天前更新" : "days ago"}
                             </span>
                           </Link>
                         );
@@ -629,9 +641,11 @@ export default function Dashboard() {
                     <div className="absolute right-0 top-0 translate-x-[15%] -translate-y-[15%] w-24 h-24 bg-red-500/5 dark:bg-red-500/2 rounded-full pointer-events-none"></div>
                     <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
                       <Target className="h-4 w-4 shrink-0" />
-                      <h4 className="font-bold text-sm">FMEA Kritiska processrisker</h4>
+                      <h4 className="font-bold text-sm">{isZh ? "FMEA 关键失效高风险雷达" : "FMEA Critical Process Risks"}</h4>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Dessa riskfaktorer har ett kritiskt Risk Priority Number (RPN) ≥ 200.</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {isZh ? "以下潜在失效模式的风险顺序数 (RPN) ≥ 200，需在 Improve 阶段优先实施工程防错。" : "Risk factors with critical Risk Priority Number (RPN) >= 200."}
+                    </p>
                     <div className="space-y-2">
                       {highRiskFmea.slice(0, 3).map((risk, i) => {
                         const proj = projects.find(p => p.id === risk.project_id);
@@ -643,7 +657,7 @@ export default function Dashboard() {
                           >
                             <div className="min-w-0 pr-2">
                               <p className="text-[10px] text-slate-400 truncate">{proj?.name}</p>
-                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate pr-0.5">Felläge: {risk.failureMode}</p>
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate pr-0.5">{isZh ? "失效模式" : "Failure"}: {risk.failureMode}</p>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="text-[9px] font-bold uppercase tracking-tight text-white bg-red-600 px-2 py-0.5 rounded-full shadow-[0_1px_3px_rgba(239,68,68,0.2)] font-mono">
@@ -664,8 +678,12 @@ export default function Dashboard() {
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Projektstatus & Spårbarhet</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Använd filtren för att isolera och granska specifika projekt eller faskategorier.</p>
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                    {isZh ? "项目全景状态与阶段溯源" : "Project Status & Traceability"}
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {isZh ? "按关键字、阶段门禁状态或 DMAIC 阶段分类筛选项目详情。" : "Use filters to isolate and inspect specific projects or DMAIC phases."}
+                  </p>
                 </div>
                 
                 {/* Search Inputs and Controls */}
@@ -682,7 +700,7 @@ export default function Dashboard() {
                       }`}
                     >
                       <List className="h-3.5 w-3.5" />
-                      <span>Kortvy</span>
+                      <span>{isZh ? "卡片视图" : "Card View"}</span>
                     </button>
                     <button
                       type="button"
@@ -694,7 +712,7 @@ export default function Dashboard() {
                       }`}
                     >
                       <Calendar className="h-3.5 w-3.5" />
-                      <span>Gantt-tidslinje</span>
+                      <span>{isZh ? "甘特里程碑" : "Gantt Timeline"}</span>
                     </button>
                   </div>
 
@@ -704,7 +722,7 @@ export default function Dashboard() {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Sök projekt..."
+                      placeholder={isZh ? "搜索项目名称、目标..." : "Search projects..."}
                       className="w-full text-xs h-9 pl-9 pr-4 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder-slate-400"
                     />
                   </div>
@@ -714,9 +732,9 @@ export default function Dashboard() {
                     onChange={(e: any) => setStatusFilter(e.target.value)}
                     className="text-xs h-9 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="all">Alla statusar</option>
-                    <option value="active">Aktiva</option>
-                    <option value="completed">Avslutade</option>
+                    <option value="all">{isZh ? "全部状态" : "All Status"}</option>
+                    <option value="active">{isZh ? "推进中" : "Active"}</option>
+                    <option value="completed">{isZh ? "已结项" : "Completed"}</option>
                   </select>
 
                   <select
@@ -724,9 +742,11 @@ export default function Dashboard() {
                     onChange={(e: any) => setPhaseFilter(e.target.value === "all" ? "all" : Number(e.target.value))}
                     className="text-xs h-9 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="all">Alla faser</option>
+                    <option value="all">{isZh ? "全部 DMAIC 阶段" : "All Phases"}</option>
                     {phases.map(p => (
-                      <option key={p.id} value={p.id}>{p.id}. {p.name}</option>
+                      <option key={p.id} value={p.id}>
+                        {p.id}. {isZh ? (p.nameZh || p.name) : p.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -736,8 +756,12 @@ export default function Dashboard() {
               {filteredProjects.length === 0 ? (
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-12 text-center text-slate-400 dark:text-slate-500">
                   <FolderOpen className="h-10 w-10 mx-auto text-slate-400 opacity-60 mb-3" />
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Inga matchande projekt hittades</p>
-                  <p className="text-xs opacity-80 mt-1">Ändra dina sökord eller nollställ filterkriterierna.</p>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    {isZh ? "未找到符合筛选条件的项目" : "No matching projects found"}
+                  </p>
+                  <p className="text-xs opacity-80 mt-1">
+                    {isZh ? "请尝试调整搜索关键词或重置筛选条件。" : "Adjust search keywords or reset filter criteria."}
+                  </p>
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -748,7 +772,7 @@ export default function Dashboard() {
                       setPhaseFilter("all");
                     }}
                   >
-                    Återställ filter
+                    {isZh ? "重置筛选条件" : "Reset Filters"}
                   </Button>
                 </div>
               ) : viewMode === "card" ? (
@@ -923,7 +947,9 @@ export default function Dashboard() {
                                     )}
                                   </div>
                                 ) : (
-                                  <span className="text-[10px] text-slate-400 font-medium">Ej sigma-mätt ännu</span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {isZh ? "暂无西格玛测量值" : "No Sigma Recorded"}
+                                  </span>
                                 )}
                               </div>
 
@@ -935,7 +961,9 @@ export default function Dashboard() {
                                       <Coins className="h-3.5 w-3.5" />
                                       <span>{formatCurrency(project.actual_savings)}</span>
                                     </div>
-                                    <span className="text-[9px] text-slate-400 font-medium">Faktisk besparing</span>
+                                    <span className="text-[9px] text-slate-400 font-medium">
+                                      {isZh ? "实际产生财务收益" : "Actual Savings"}
+                                    </span>
                                   </div>
                                 ) : project.estimated_savings != null ? (
                                   <div className="flex flex-col text-right">
@@ -943,10 +971,14 @@ export default function Dashboard() {
                                       <Coins className="h-3.5 w-3.5" />
                                       <span>{formatCurrency(project.estimated_savings)}</span>
                                     </div>
-                                    <span className="text-[9px] text-slate-400 font-medium">Målbesparing</span>
+                                    <span className="text-[9px] text-slate-400 font-medium">
+                                      {isZh ? "预计目标收益" : "Estimated Target"}
+                                    </span>
                                   </div>
                                 ) : (
-                                  <span className="text-[10px] text-slate-400 font-medium">Inga besparingar</span>
+                                  <span className="text-[10px] text-slate-400 font-medium">
+                                    {isZh ? "未记录收益" : "No Savings"}
+                                  </span>
                                 )}
                               </div>
 
