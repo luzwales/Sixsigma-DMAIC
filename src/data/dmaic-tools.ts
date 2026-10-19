@@ -1,18 +1,34 @@
 export interface Tool {
   id: string;
   name: string;
+  nameZh?: string;
+  nameEn?: string;
   description: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
   category: string;
+  categoryZh?: string;
+  categoryEn?: string;
   usage: string;
+  usageZh?: string;
+  usageEn?: string;
   example?: string;
+  exampleZh?: string;
+  exampleEn?: string;
   formula?: string;
 }
 
 export interface Phase {
   id: number;
   name: string;
+  nameZh?: string;
+  nameEn?: string;
   title: string;
+  titleZh?: string;
+  titleEn?: string;
   description: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
   color: string;
   icon: string;
   tools: Tool[];
@@ -22,8 +38,11 @@ export const phases: Phase[] = [
   {
     id: 1,
     name: "Define",
+    nameZh: "Define (定义)",
     title: "Definiera problemet",
+    titleZh: "界定问题与目标",
     description: "Identifiera och kvantifiera problemets omfattning. Fastställ projektmål, omfattning och kundkrav.",
+    descriptionZh: "明确业务痛点与项目范围，建立项目章程，对齐客户核心需求 (VOC/CTQ)。",
     color: "from-blue-500 to-blue-600",
     icon: "🎯",
     tools: [
@@ -101,8 +120,11 @@ export const phases: Phase[] = [
   {
     id: 2,
     name: "Measure",
+    nameZh: "Measure (测量)",
     title: "Mät nuläget",
+    titleZh: "评估当前过程能力",
     description: "Kvantifiera processens nuvarande prestanda. Samla in data och validera mätsystemet.",
+    descriptionZh: "制定数据收集计划，执行测量系统分析 (MSA / Gage R&R)，核算初始过程能力基准。",
     color: "from-green-500 to-green-600",
     icon: "📊",
     tools: [
@@ -187,8 +209,11 @@ export const phases: Phase[] = [
   {
     id: 3,
     name: "Analyze",
+    nameZh: "Analyze (分析)",
     title: "Analysera rotorsaker",
+    titleZh: "探寻关键根因",
     description: "Identifiera grundorsakerna till problem genom statistisk analys och problemlösningsverktyg.",
+    descriptionZh: "运用假设检验、方差分析 (ANOVA)、鱼骨图与多变量分析，从潜在原因中分离关键少数根因。",
     color: "from-yellow-500 to-orange-500",
     icon: "🔍",
     tools: [
@@ -298,8 +323,11 @@ export const phases: Phase[] = [
   {
     id: 4,
     name: "Improve",
+    nameZh: "Improve (改进)",
     title: "Förbättra processen",
+    titleZh: "开发并验证解决方案",
     description: "Utveckla, testa och implementera lösningar för att eliminera rotorsakerna.",
+    descriptionZh: "利用试验设计 (DOE)、精益工具、Pugh 矩阵与防错 (Poka-Yoke) 优化过程参数，进行试点验证。",
     color: "from-purple-500 to-purple-600",
     icon: "🚀",
     tools: [
@@ -395,8 +423,11 @@ export const phases: Phase[] = [
   {
     id: 5,
     name: "Control",
+    nameZh: "Control (控制)",
     title: "Styra och upprätthålla",
+    titleZh: "固化收益与长效监控",
     description: "Säkerställ att förbättringarna bibehålls över tid genom standardisering och övervakning.",
+    descriptionZh: "制定控制计划 (Control Plan)，部署休哈特与 CUSUM/EWMA 控制图，标准化作业流程。",
     color: "from-red-500 to-red-600",
     icon: "🎮",
     tools: [

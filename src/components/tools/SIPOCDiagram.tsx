@@ -7,6 +7,7 @@ import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { toast } from "sonner";
 
 interface SIPOCData {
@@ -32,6 +33,17 @@ interface SIPOCDiagramProps {
 }
 
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
+  const columns: { key: keyof SIPOCData; label: string; placeholder: string; color: string }[] = [
+    { key: "suppliers", label: isZh ? "供应商 (Suppliers)" : "Suppliers", placeholder: isZh ? "原材料/信息提供方..." : "Supplier...", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+    { key: "inputs", label: isZh ? "输入 (Inputs)" : "Inputs", placeholder: isZh ? "物料、工单、图纸..." : "Input/Material...", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+    { key: "process", label: isZh ? "核心过程 (Process)" : "Process", placeholder: isZh ? "4-7步核心工序流..." : "Process step...", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+    { key: "outputs", label: isZh ? "输出 (Outputs)" : "Outputs", placeholder: isZh ? "半成品、成品、数据..." : "Product/Output...", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
+    { key: "customers", label: isZh ? "客户 (Customers)" : "Customers", placeholder: isZh ? "下道工序/终端用户..." : "Customer...", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
+  ];
+
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
 
@@ -71,14 +83,25 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
   };
 
   const loadExample = () => {
-    setProcessName("Orderhanteringsprocessen");
-    setData({
-      suppliers: ["Kund", "Säljavdelning", "Lager"],
-      inputs: ["Order", "Produktdata", "Lagersaldo"],
-      process: ["Ta emot order", "Kreditkontroll", "Plocka", "Packa", "Skicka"],
-      outputs: ["Levererad order", "Faktura", "Spårningsnummer"],
-      customers: ["Slutkund", "Ekonomiavdelning"],
-    });
+    if (isZh) {
+      setProcessName("汽车门护板总成制造流程");
+      setData({
+        suppliers: ["注塑粒子供应商 (LG化学)", "卡扣冲压件厂", "生产计划科 (MES)"],
+        inputs: ["ABS/PC 改性塑料颗粒", "金属加强骨架", "生产派工单与数模"],
+        process: ["注塑成型工序", "机械手剪水口与打磨", "超声波骨架焊接", "总装卡扣压装", "下线全功能外观检"],
+        outputs: ["门护板总成合格品", "注塑流道废料 (粉碎回收)", "全检质检记录单"],
+        customers: ["主机厂总装二车间", "下道中控台装配线"],
+      });
+    } else {
+      setProcessName("Order Processing & Fulfillment Flow");
+      setData({
+        suppliers: ["Customer", "Sales Ops", "Warehouse"],
+        inputs: ["Purchase Order", "BOM Spec", "Inventory Levels"],
+        process: ["Receive PO", "Credit Approval", "Batch Pick", "Pack & Label", "Dispatch Carrier"],
+        outputs: ["Shipped Goods", "Commercial Invoice", "Tracking ID"],
+        customers: ["End Client", "Finance & Accounting"],
+      });
+    }
   };
 
 
@@ -104,8 +127,15 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
       <ExampleDataButton onLoad={loadExample} />
 
       <div>
-        <label className="text-sm font-medium text-foreground">Processnamn</label>
-        <Input placeholder="T.ex. Orderhanteringsprocessen" value={processName} onChange={(e) => setProcessName(e.target.value)} className="mt-1" />
+        <label className="text-sm font-medium text-foreground">
+          {isZh ? "流程名称 (Process Name)" : "Process Name"}
+        </label>
+        <Input 
+          placeholder={isZh ? "例如：汽车门护板总成制造流程..." : "e.g. Order Processing Flow..."} 
+          value={processName} 
+          onChange={(e) => setProcessName(e.target.value)} 
+          className="mt-1" 
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -126,7 +156,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
               </div>
             ))}
             <Button size="sm" variant="ghost" className="w-full text-xs" onClick={() => addItem(col.key)}>
-              <Plus className="h-3 w-3 mr-1" /> Lägg till
+              <Plus className="h-3 w-3 mr-1" /> {isZh ? "添加项" : "Lägg till"}
             </Button>
           </div>
         ))}
@@ -134,7 +164,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
 
       {totalFilled >= 3 && (
         <div className="bg-muted/50 rounded-lg p-3 text-sm">
-          <p className="font-medium mb-1">{processName || "SIPOC"} — Sammanfattning</p>
+          <p className="font-medium mb-1">{processName || "SIPOC"} — {isZh ? "要素统计汇总" : "Sammanfattning"}</p>
           <div className="flex flex-wrap gap-3">
             {columns.map((col, i) => (
               <span key={col.key} className="text-muted-foreground">{col.label}: {filledCounts[i]}</span>
@@ -147,7 +177,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
 
       <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={reset}>
-          <RotateCcw className="h-3 w-3 mr-1" /> Återställ
+          <RotateCcw className="h-3 w-3 mr-1" /> {isZh ? "清空重置" : "Återställ"}
         </Button>
       </div>
     </div>

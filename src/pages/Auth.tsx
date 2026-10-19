@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import firebaseConfig from "../../firebase-applet-config.json";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const GoogleIcon = () => (
   <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
@@ -22,6 +23,9 @@ const GoogleIcon = () => (
 );
 
 export default function Auth() {
+  const { locale, t } = useLanguage();
+  const isZh = locale === "zh";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -195,33 +199,35 @@ export default function Auth() {
           <div className="max-w-md mx-auto">
             <Card>
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl">DMAIC Projekthantering</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  {isZh ? "欢迎使用六西格玛工具箱" : "Välkommen"}
+                </CardTitle>
                 <CardDescription>
-                  Logga in för att spara dina projekt och analyser
+                  {isZh ? "登录以同步并保存您的 DMAIC 改善项目、分析日志与计算器数据" : "Logga in för att spara dina projekt och analyser"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="signin">
                   <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="signin">Logga in</TabsTrigger>
-                    <TabsTrigger value="signup">Registrera</TabsTrigger>
+                    <TabsTrigger value="signin">{isZh ? "账号登录" : "Logga in"}</TabsTrigger>
+                    <TabsTrigger value="signup">{isZh ? "免费注册" : "Registrera"}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="signin">
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signin-email">E-post</Label>
+                        <Label htmlFor="signin-email">{isZh ? "工作电子邮箱 (Email)" : "E-post"}</Label>
                         <Input
                           id="signin-email"
                           type="email"
-                          placeholder="din@email.se"
+                          placeholder={isZh ? "your-name@company.com" : "din@email.se"}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signin-password">Lösenord</Label>
+                        <Label htmlFor="signin-password">{isZh ? "登录密码" : "Lösenord"}</Label>
                         <Input
                           id="signin-password"
                           type="password"
@@ -233,7 +239,7 @@ export default function Auth() {
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Logga in
+                        {isZh ? "登录系统" : "Logga in"}
                       </Button>
                     </form>
                   </TabsContent>
@@ -241,32 +247,32 @@ export default function Auth() {
                   <TabsContent value="signup">
                     <form onSubmit={handleSignUp} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signup-name">Namn (valfritt)</Label>
+                        <Label htmlFor="signup-name">{isZh ? "姓名 / 称谓 (可选)" : "Namn (valfritt)"}</Label>
                         <Input
                           id="signup-name"
                           type="text"
-                          placeholder="Ditt namn"
+                          placeholder={isZh ? "例如：张工程师" : "Ditt namn"}
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-email">E-post</Label>
+                        <Label htmlFor="signup-email">{isZh ? "工作电子邮箱 (Email)" : "E-post"}</Label>
                         <Input
                           id="signup-email"
                           type="email"
-                          placeholder="din@email.se"
+                          placeholder={isZh ? "your-name@company.com" : "din@email.se"}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-password">Lösenord</Label>
+                        <Label htmlFor="signup-password">{isZh ? "设置登录密码 (至少6位)" : "Lösenord"}</Label>
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder="Minst 6 tecken"
+                          placeholder={isZh ? "不少于6位字符" : "Minst 6 tecken"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -274,7 +280,7 @@ export default function Auth() {
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Skapa konto
+                        {isZh ? "创建并激活账号" : "Skapa konto"}
                       </Button>
                     </form>
                   </TabsContent>
@@ -285,7 +291,7 @@ export default function Auth() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">eller</span>
+                    <span className="bg-card px-2 text-muted-foreground">{isZh ? "或者" : "eller"}</span>
                   </div>
                 </div>
 

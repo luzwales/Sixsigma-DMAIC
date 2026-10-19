@@ -7,15 +7,22 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, ArrowRight, Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { getLocalizedPhase } from "@/i18n/toolTranslations";
 
 export default function PhasePage() {
   const { phaseId } = useParams<{ phaseId: string }>();
   const [searchQuery, setSearchQuery] = useState("");
+  const { t, locale } = useLanguage();
 
   const currentPhaseId = parseInt(phaseId || "1", 10);
-  const phase = phases.find((p) => p.id === currentPhaseId);
-  const prevPhase = phases.find((p) => p.id === currentPhaseId - 1);
-  const nextPhase = phases.find((p) => p.id === currentPhaseId + 1);
+  const rawPhase = phases.find((p) => p.id === currentPhaseId);
+  const rawPrevPhase = phases.find((p) => p.id === currentPhaseId - 1);
+  const rawNextPhase = phases.find((p) => p.id === currentPhaseId + 1);
+
+  const phase = useMemo(() => rawPhase ? getLocalizedPhase(rawPhase, locale) : null, [rawPhase, locale]);
+  const prevPhase = useMemo(() => rawPrevPhase ? getLocalizedPhase(rawPrevPhase, locale) : null, [rawPrevPhase, locale]);
+  const nextPhase = useMemo(() => rawNextPhase ? getLocalizedPhase(rawNextPhase, locale) : null, [rawNextPhase, locale]);
 
   const filteredTools = useMemo(() => {
     if (!phase) return [];
@@ -63,7 +70,9 @@ export default function PhasePage() {
             <div className="flex items-center gap-4 mb-4">
               <span className="text-5xl">{phase.icon}</span>
               <div>
-                <span className="text-white/80 text-sm font-medium">Fas {phase.id}</span>
+                <span className="text-white/80 text-sm font-medium">
+                  {t("phases.phaseLabel", `第 ${phase.id} 阶段`).replace("{{id}}", String(phase.id))}
+                </span>
                 <h1 className="text-4xl md:text-5xl font-bold">{phase.name}</h1>
               </div>
             </div>
@@ -83,7 +92,7 @@ export default function PhasePage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Sök verktyg..."
+                placeholder={t("phases.searchPlaceholder", "搜索工具...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -94,7 +103,7 @@ export default function PhasePage() {
           {/* Tools by category */}
           {categories.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              Inga verktyg hittades för "{searchQuery}"
+              {t("phases.noToolsFound", `未找到与 "${searchQuery}" 相关的工具`).replace("{{query}}", searchQuery)}
             </div>
           ) : (
             <div className="space-y-10">
@@ -143,7 +152,7 @@ export default function PhasePage() {
             ) : (
               <Button asChild className="gap-2">
                 <Link to="/calculators">
-                  Kalkylatorer
+                  {t("nav.calculators", "统计计算器")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

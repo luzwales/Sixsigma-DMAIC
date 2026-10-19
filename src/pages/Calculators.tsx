@@ -1,10 +1,12 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { getLocalizedCategories } from "@/i18n/calculatorCategories";
 import { 
   Award, 
   BarChart3, 
@@ -289,17 +291,19 @@ const CALCULATOR_HELP_DOCS: Record<string, HelpDoc> = {
 };
 
 export default function Calculators() {
+  const { locale, t } = useLanguage();
+  const categories = useMemo(() => getLocalizedCategories(locale), [locale]);
   const [selectedCategory, setSelectedCategory] = useState("capability");
   const [selectedCalc, setSelectedCalc] = useState("cp-cpk");
   const [showHelp, setShowHelp] = useState(false);
 
-  const currentCategory = CATEGORIES.find(c => c.id === selectedCategory) || CATEGORIES[0];
+  const currentCategory = categories.find(c => c.id === selectedCategory) || categories[0];
   const activeCalculatorObj = currentCategory.calculators.find(c => c.id === selectedCalc) || currentCategory.calculators[0];
   const ActiveCalculatorComponent = activeCalculatorObj?.component;
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    const cat = CATEGORIES.find(c => c.id === categoryId);
+    const cat = categories.find(c => c.id === categoryId);
     if (cat && cat.calculators.length > 0) {
       setSelectedCalc(cat.calculators[0].id);
     }
@@ -317,11 +321,15 @@ export default function Calculators() {
               <div className="absolute right-0 top-0 h-40 w-40 bg-primary/2.5 rounded-full blur-3xl pointer-events-none" />
               <div className="space-y-1.5 max-w-2xl">
                 <div className="inline-flex items-center gap-1 bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                  <Award className="h-3.5 w-3.5" /> Metodikverktyg & Statistik
+                  <Award className="h-3.5 w-3.5" /> {locale === "zh" ? "专业方法与统计工具" : "Methodology & Statistics"}
                 </div>
-                <h1 className="text-3xl font-extrabold tracking-tight">Statistiska Six Sigma Kalkylatorer</h1>
+                <h1 className="text-3xl font-extrabold tracking-tight">
+                  {locale === "zh" ? "六西格玛专业统计计算器" : "Six Sigma Statistical Calculators"}
+                </h1>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  En samling av professionella metrologiska, matematiska och processinriktade beräkningsverktyg som används inom DMAIC och Lean Six Sigma.
+                  {locale === "zh" 
+                    ? "涵盖 DMAIC 与精益六西格玛核心场景的工业级统计计量、能力评估、假设检验与过程控制计算工具集。" 
+                    : "A comprehensive suite of metrological, mathematical, and process-oriented calculation tools used in DMAIC and Lean Six Sigma."}
                 </p>
               </div>
             </div>
@@ -332,9 +340,9 @@ export default function Calculators() {
               {/* Category sidebar selector */}
               <div className="space-y-3 col-span-1 lg:col-span-1">
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2 mb-1">
-                  Kategorier
+                  {locale === "zh" ? "分析类别" : "Categories"}
                 </div>
-                {CATEGORIES.map((cat) => {
+                {categories.map((cat) => {
                   const CatIcon = cat.icon;
                   const isSelected = selectedCategory === cat.id;
 
@@ -411,7 +419,9 @@ export default function Calculators() {
                         className="flex items-center gap-1 w-full md:w-auto md:px-3 py-1.5 text-xs font-medium cursor-pointer shrink-0 transition-all"
                       >
                         <HelpCircle className="h-3.5 w-3.5" />
-                        {showHelp ? "Dölj guide" : "Förklara uträkningen & verktyget"}
+                        {showHelp 
+                          ? (locale === "zh" ? "收起指南" : "Hide Guide") 
+                          : (locale === "zh" ? "解析原理与指导指南" : "Explain Method & Formula")}
                       </Button>
                     </div>
                   </header>
@@ -421,26 +431,32 @@ export default function Calculators() {
                     <div className="mx-6 mt-4 p-5 bg-primary/2 rounded-xl border border-primary/10 space-y-4 animate-in fade-in duration-200">
                       <div className="flex items-center gap-2 font-bold text-xs text-primary uppercase tracking-wider border-b border-primary/5 pb-2">
                         <HelpCircle className="h-4 w-4 text-primary animate-pulse" />
-                        <span>Professionell vägledning: {activeCalculatorObj.name}</span>
+                        <span>{locale === "zh" ? "专业方法与落地指引: " : "Professional Guidance: "}{activeCalculatorObj.name}</span>
                       </div>
                       
                       {CALCULATOR_HELP_DOCS[activeCalculatorObj.id] ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
                           <div className="space-y-3.5">
                             <div>
-                              <h4 className="font-bold text-xs text-foreground mb-1">Vad är detta?</h4>
+                              <h4 className="font-bold text-xs text-foreground mb-1">
+                                {locale === "zh" ? "工具定义与核心价值" : "What is this tool?"}
+                              </h4>
                               <p className="text-muted-foreground text-xs leading-relaxed">
                                 {CALCULATOR_HELP_DOCS[activeCalculatorObj.id].what}
                               </p>
                             </div>
                             <div>
-                              <h4 className="font-bold text-xs text-foreground mb-1">När används det under DMAIC?</h4>
+                              <h4 className="font-bold text-xs text-foreground mb-1">
+                                {locale === "zh" ? "DMAIC 阶段应用时机" : "When is it used in DMAIC?"}
+                              </h4>
                               <p className="text-muted-foreground text-xs leading-relaxed">
                                 {CALCULATOR_HELP_DOCS[activeCalculatorObj.id].when}
                               </p>
                             </div>
                             <div>
-                              <h4 className="font-bold text-xs text-foreground mb-1">Hur tolkar man resultatet?</h4>
+                              <h4 className="font-bold text-xs text-foreground mb-1">
+                                {locale === "zh" ? "数据与结论解读规则" : "How to interpret the results?"}
+                              </h4>
                               <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
                                 {CALCULATOR_HELP_DOCS[activeCalculatorObj.id].interpretation.map((item, idx) => (
                                   <li key={idx} className="leading-relaxed">{item}</li>
@@ -451,19 +467,25 @@ export default function Calculators() {
                           
                           <div className="bg-muted/30 p-4 rounded-lg border border-primary/5 space-y-3 flex flex-col justify-between">
                             <div>
-                              <h4 className="font-bold text-xs text-primary uppercase tracking-wider mb-2">Formel &amp; Beräkningsmodell</h4>
+                              <h4 className="font-bold text-xs text-primary uppercase tracking-wider mb-2">
+                                {locale === "zh" ? "计算模型与数学公式" : "Formula & Mathematical Model"}
+                              </h4>
                               <div className="font-mono text-xs text-foreground bg-background p-3.5 rounded border leading-relaxed whitespace-pre-line overflow-x-auto">
                                 {CALCULATOR_HELP_DOCS[activeCalculatorObj.id].formula}
                               </div>
                             </div>
                             <div className="text-[10px] text-muted-foreground leading-normal italic pt-2 border-t mt-2">
-                              💡 Tips: Alla dina beräkningar kan sparas i projektmappen via loggarna längst ner för löpande spårbarhet.
+                              {locale === "zh" 
+                                ? "💡 提示: 您的每一次计算均可保存到项目档案中，用于持续改进审计与回溯追踪。" 
+                                : "💡 Tip: All calculations can be saved to your project folder for DMAIC audit and traceability."}
                             </div>
                           </div>
                         </div>
                       ) : (
                         <p className="text-xs text-muted-foreground">
-                          Ingen utökad guide tillgänglig för denna kalkylator ännu. Kontakta din Six Sigma Master Black Belt för ytterligare metodstöd.
+                          {locale === "zh" 
+                            ? "当前计算器暂无扩展指南，如有统计疑问可咨询六西格玛黑带大师 (MBB)。" 
+                            : "No extended guide available for this calculator yet. Contact your Master Black Belt for advice."}
                         </p>
                       )}
                     </div>
@@ -474,7 +496,7 @@ export default function Calculators() {
                       <ActiveCalculatorComponent />
                     ) : (
                       <div className="py-12 text-center text-muted-foreground text-sm">
-                        Kalkylatorn laddas...
+                        {locale === "zh" ? "计算器加载中..." : "Loading calculator..."}
                       </div>
                     )}
                   </CardContent>
@@ -493,6 +515,9 @@ export default function Calculators() {
 
 // Custom localized sample size calculator so it maintains full Sweden style integration
 function SampleSizeCalculator() {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [confidence, setConfidence] = useState("95");
   const [margin, setMargin] = useState("");
   const [population, setPopulation] = useState("");
@@ -523,11 +548,15 @@ function SampleSizeCalculator() {
   return (
     <div className="space-y-4">
       <div className="bg-muted/10 p-4 border border-primary/5 rounded-xl text-sm text-muted-foreground leading-normal">
-        💡 Beräkna hur många mätpunkter (enheter) du måste mäta för att få tillräcklig representativitet mätmässigt med önskat konfidensintervall.
+        {isZh 
+          ? "💡 计算在给定的置信水平 (Confidence Level) 与允许误差率下，要使统计推断具有代表性所必需的最少抽样样本容量。" 
+          : "💡 Calculate the minimum sample size required for statistically significant representation at your chosen confidence interval."}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="confidence">Konfidensnivå (%)</Label>
+          <Label htmlFor="confidence">
+            {isZh ? "置信度水平 (Confidence Level)" : "Confidence Level (%)"}
+          </Label>
           <select
             id="confidence"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -540,12 +569,14 @@ function SampleSizeCalculator() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="margin">Tillåten felmarginal (%)</Label>
+          <Label htmlFor="margin">
+            {isZh ? "最大允许误差界限 (%)" : "Margin of Error (%)"}
+          </Label>
           <div className="relative">
             <Input
               id="margin"
               type="number"
-              placeholder="Ex. 5"
+              placeholder={isZh ? "如：5" : "e.g. 5"}
               value={margin}
               onChange={(e) => setMargin(e.target.value)}
               className="pr-6"
@@ -554,28 +585,34 @@ function SampleSizeCalculator() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="population">Populationsstorlek (valfritt)</Label>
+          <Label htmlFor="population">
+            {isZh ? "总体容量 N (可选，留空为无限总体)" : "Population Size (Optional)"}
+          </Label>
           <Input
             id="population"
             type="number"
-            placeholder="Oändlig population"
+            placeholder={isZh ? "无限大总体" : "Infinite population"}
             value={population}
             onChange={(e) => setPopulation(e.target.value)}
           />
         </div>
       </div>
-      <Button onClick={calculate} size="lg" className="w-full">Beräkna Stickprovsstorlek</Button>
+      <Button onClick={calculate} size="lg" className="w-full">
+        {isZh ? "计算必需抽样样本量" : "Calculate Sample Size"}
+      </Button>
 
       {result && (
         <div className="mt-4 p-6 bg-gradient-to-br from-primary/5 to-muted/30 rounded-xl text-center border">
           <div className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">
-            Minsta erforderliga stickprovsstorlek:
+            {isZh ? "建议最小抽样样本量 (Sample Size):" : "Minimum Required Sample Size:"}
           </div>
           <div className="text-4xl font-extrabold text-primary mb-1">
-            {result.toLocaleString()} st
+            {result.toLocaleString()} {isZh ? "件/次" : "units"}
           </div>
           <p className="text-xs text-muted-foreground">
-            enheter eller transaktioner måste slumpvis väljas och mätas för statistisk giltighet.
+            {isZh 
+              ? "件产品或业务工单需通过随机抽样收集并完成检测，以确保统计推断结论有效可信。" 
+              : "units or transactions must be randomly sampled and verified to achieve statistical validity."}
           </p>
         </div>
       )}

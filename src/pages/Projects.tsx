@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, FolderOpen, Trash2, Loader2, Users } from "lucide-react";
 import { phases } from "@/data/dmaic-tools";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Project {
   id: string;
@@ -52,6 +53,8 @@ export default function Projects() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { locale, t } = useLanguage();
+  const isZh = locale === "zh";
 
   useEffect(() => {
     if (!loading && !user) {
@@ -170,54 +173,54 @@ export default function Projects() {
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold">Mina Projekt</h1>
+                <h1 className="text-3xl font-bold">{isZh ? "我的改善项目" : "My Projects"}</h1>
                 <p className="text-muted-foreground mt-1">
-                  Hantera dina DMAIC-projekt och delade projekt
+                  {isZh ? "管理与跟踪您的六西格玛 DMAIC 黑带与绿带项目" : "Manage and track your DMAIC projects"}
                 </p>
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Nytt projekt
+                    {isZh ? "创建新项目" : "New Project"}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Skapa nytt projekt</DialogTitle>
+                    <DialogTitle>{isZh ? "立项：创建 DMAIC 项目" : "Create New Project"}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="project-name">Projektnamn</Label>
+                      <Label htmlFor="project-name">{isZh ? "项目名称 (Project Name)" : "Project Name"}</Label>
                       <Input
                         id="project-name"
-                        placeholder="T.ex. Kvalitetsförbättring Q1"
+                        placeholder={isZh ? "如：2号线注塑门护板缩水缺陷率降低项目" : "e.g. Q1 Defect Reduction"}
                         value={newProjectName}
                         onChange={(e) => setNewProjectName(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="project-desc">Beskrivning (valfritt)</Label>
+                      <Label htmlFor="project-desc">{isZh ? "项目背景与目标说明 (可选)" : "Description (Optional)"}</Label>
                       <Textarea
                         id="project-desc"
-                        placeholder="Beskriv projektets syfte..."
+                        placeholder={isZh ? "简要描述业务痛点、基准现状及预期目标..." : "Describe project scope and goal..."}
                         value={newProjectDescription}
                         onChange={(e) => setNewProjectDescription(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="project-savings">Uppskattad besparing (SEK, valfritt)</Label>
+                      <Label htmlFor="project-savings">{isZh ? "预期年化财务硬节省 (元/SEK，可选)" : "Estimated Savings (Optional)"}</Label>
                       <Input
                         id="project-savings"
                         type="number"
-                        placeholder="T.ex. 500000"
+                        placeholder={isZh ? "如：500000" : "e.g. 500000"}
                         value={newProjectSavings}
                         onChange={(e) => setNewProjectSavings(e.target.value)}
                       />
                     </div>
                     <Button onClick={createProject} className="w-full" disabled={isCreating}>
                       {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      Skapa projekt
+                      {isZh ? "确认立项并初始化" : "Create Project"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -228,13 +231,13 @@ export default function Projects() {
               <Card className="text-center py-12">
                 <CardContent>
                   <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Inga projekt än</h3>
+                  <h3 className="text-lg font-semibold mb-2">{isZh ? "暂无改善项目" : "No projects yet"}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Skapa ditt första DMAIC-projekt för att komma igång
+                    {isZh ? "创建您的第一个 DMAIC 黑带攻坚项目，开启系统化持续改善之旅" : "Create your first DMAIC project to get started"}
                   </p>
                   <Button onClick={() => setIsDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Skapa projekt
+                    {isZh ? "立即创建项目" : "Create Project"}
                   </Button>
                 </CardContent>
               </Card>
@@ -254,11 +257,15 @@ export default function Projects() {
                                 {project.user_id !== user?.id && (
                                   <Badge variant="outline" className="gap-1">
                                     <Users className="h-3 w-3" />
-                                    Delad
+                                    {isZh ? "团队共享" : "Delad"}
                                   </Badge>
                                 )}
                                 <Badge variant={project.status === "completed" ? "default" : "secondary"}>
-                                  {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
+                                  {project.status === "active" 
+                                    ? (isZh ? "进行中" : "Active") 
+                                    : project.status === "completed" 
+                                    ? (isZh ? "已结案" : "Completed") 
+                                    : (isZh ? "已归档" : "Archived")}
                                 </Badge>
                               </div>
                               {project.description && (
@@ -282,9 +289,14 @@ export default function Projects() {
                             <div className="flex items-center gap-2">
                               <span className="text-2xl">{phase.icon}</span>
                               <div>
-                                <div className="text-sm font-medium">Fas {phase.id}: {phase.name}</div>
+                                <div className="text-sm font-medium">
+                                  {isZh 
+                                    ? `第 ${phase.id} 阶段: ${phase.nameZh || phase.name}` 
+                                    : `Phase ${phase.id}: ${phase.name}`}
+                                </div>
                                 <div className="text-xs text-muted-foreground">
-                                  Uppdaterad {parseSafeDate(project.updated_at).toLocaleDateString("sv-SE")}
+                                  {isZh ? "最近更新于 " : "Updated "}
+                                  {parseSafeDate(project.updated_at).toLocaleDateString(isZh ? "zh-CN" : "sv-SE")}
                                 </div>
                               </div>
                             </div>

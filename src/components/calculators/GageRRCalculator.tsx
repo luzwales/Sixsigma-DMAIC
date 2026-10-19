@@ -7,6 +7,8 @@ import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const EXAMPLE = {
   operators: "3",
@@ -56,8 +58,11 @@ interface GageRRResult {
   verdict: string;
 }
 
-export function GageRRCalculator({ toolId = "gage-rr", toolName = "Gage R&R", phase = 2 }: { toolId?: string; toolName?: string; phase?: number }) {
-  const [operators, setOperators] = useState("");
+export function GageRRCalculator({ toolId = "gage-rr", toolName = "Gage R&R (MSA)", phase = 2 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
+  const [operators, setOperators] = useState("3");
   const [parts, setParts] = useState("");
   const [trials, setTrials] = useState("");
   const [data, setData] = useState("");
@@ -220,82 +225,90 @@ export function GageRRCalculator({ toolId = "gage-rr", toolName = "Gage R&R", ph
   return (
     <div className="space-y-4 pt-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
-      <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" /> Exempeldata
-        </Button>
-      </div>
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-3 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Antal operatörer</Label>
+          <Label className="text-xs">{isZh ? "测量人员数 (Operators)" : "Operators"}</Label>
           <Input type="number" min="2" value={operators} onChange={(e) => setOperators(e.target.value)} className="h-8 text-sm" placeholder="3" />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Antal delar</Label>
+          <Label className="text-xs">{isZh ? "测试部件数 (Parts)" : "Parts"}</Label>
           <Input type="number" min="2" value={parts} onChange={(e) => setParts(e.target.value)} className="h-8 text-sm" placeholder="10" />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Antal mätningar/del</Label>
+          <Label className="text-xs">{isZh ? "重复测量次数 (Trials)" : "Trials"}</Label>
           <Input type="number" min="2" value={trials} onChange={(e) => setTrials(e.target.value)} className="h-8 text-sm" placeholder="3" />
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs">Mätdata (en rad per operatör+del, värden separerade med mellanslag)</Label>
+        <Label className="text-xs">
+          {isZh ? "测量原始数据 (每行格式：操作员+部件代号，空格或制表符分隔测量值)" : "Measurement Data (one row per operator+part, separated by space)"}
+        </Label>
         <textarea
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring h-32"
-          placeholder="Op1/Del1: 5.12 5.13 5.14&#10;Op1/Del2: 5.10 5.11 5.10&#10;..."
+          placeholder={isZh ? "Op1/零件1: 5.12 5.13 5.14&#10;Op1/零件2: 5.10 5.11 5.10&#10;..." : "Op1/Part1: 5.12 5.13 5.14&#10;Op1/Part2: 5.10 5.11 5.10&#10;..."}
           value={data}
           onChange={(e) => setData(e.target.value)}
         />
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna Gage R&R</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "执行 Gage R&R 方差分解计算" : "Calculate Gage R&R"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">%R&R (Gage R&R / Total Variation)</div>
-            <div className="text-3xl font-bold font-mono">{result.percentRR.toFixed(1)}%</div>
-            <Badge variant={result.percentRR <= 10 ? "default" : result.percentRR <= 30 ? "secondary" : "destructive"} className="mt-2">
-              {result.verdict}
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              %R&R ({isZh ? "测量变异占总变异百分比" : "Gage R&R / Total Variation"})
+            </div>
+            <div className="text-3xl font-extrabold font-mono text-primary">{result.percentRR.toFixed(1)}%</div>
+            <Badge variant={result.percentRR <= 10 ? "default" : result.percentRR <= 30 ? "secondary" : "destructive"} className="mt-2 text-xs">
+              {result.percentRR <= 10 
+                ? (isZh ? "✓ 测量系统优秀 (<10%)" : "✓ Acceptable (<10%)")
+                : result.percentRR <= 30 
+                ? (isZh ? "⚠ 勉强接受需监控 (10-30%)" : "⚠ Marginal (10-30%)")
+                : (isZh ? "✗ 测量系统不可接受 (>30%)" : "✗ Unacceptable (>30%)")}
             </Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="p-2 bg-muted/30 rounded text-center">
-              <div className="text-xs text-muted-foreground">Repeterbarhet (EV)</div>
+            <div className="p-2 bg-muted/30 rounded text-center border">
+              <div className="text-xs text-muted-foreground">{isZh ? "重复性 (设备变异 EV)" : "Repeatability (EV)"}</div>
               <div className="font-mono font-medium">{result.repeatability.toFixed(4)}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded text-center">
-              <div className="text-xs text-muted-foreground">Reproducerbarhet (AV)</div>
+            <div className="p-2 bg-muted/30 rounded text-center border">
+              <div className="text-xs text-muted-foreground">{isZh ? "再现性 (人员变异 AV)" : "Reproducibility (AV)"}</div>
               <div className="font-mono font-medium">{result.reproducibility.toFixed(4)}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded text-center">
-              <div className="text-xs text-muted-foreground">Gage R&R</div>
+            <div className="p-2 bg-muted/30 rounded text-center border">
+              <div className="text-xs text-muted-foreground">Gage R&R (综合)</div>
               <div className="font-mono font-medium">{result.gageRR.toFixed(4)}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded text-center">
-              <div className="text-xs text-muted-foreground">Delvariation (PV)</div>
+            <div className="p-2 bg-muted/30 rounded text-center border">
+              <div className="text-xs text-muted-foreground">{isZh ? "部件间变异 (PV)" : "Part Variation (PV)"}</div>
               <div className="font-mono font-medium">{result.partVariation.toFixed(4)}</div>
             </div>
           </div>
 
-          <div className="p-3 bg-muted/30 rounded text-center">
-            <div className="text-xs text-muted-foreground">Number of Distinct Categories (ndc)</div>
-            <div className="font-mono text-xl font-bold">{result.ndc}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {result.ndc >= 5 ? "✓ Acceptabelt (≥5)" : "✗ Otillräckligt (<5)"}
+          <div className="p-3 bg-muted/30 rounded text-center border">
+            <div className="text-xs text-muted-foreground">{isZh ? "可区分类别数 (ndc 分辨力)" : "Number of Distinct Categories (ndc)"}</div>
+            <div className="font-mono text-xl font-extrabold text-foreground">{result.ndc}</div>
+            <div className="text-xs text-muted-foreground mt-1 font-medium">
+              {result.ndc >= 5 
+                ? (isZh ? "✓ 分辨力充足 (ndc ≥ 5)" : "✓ Acceptable (ndc >= 5)") 
+                : (isZh ? "✗ 分辨力严重不足 (ndc < 5)" : "✗ Insufficient (ndc < 5)")}
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+          <p className="text-xs text-muted-foreground bg-muted/30 p-2.5 rounded border leading-relaxed">
             💡 {result.percentRR <= 10 
-              ? "Mätsystemet har utmärkt precision och kan användas för processtyrning." 
+              ? (isZh ? "该测量系统具有极高精度，能完全胜任工序控制与产品交付判定。" : "Measurement system has excellent precision and can be trusted.") 
               : result.percentRR <= 30 
-              ? "Mätsystemet kan förbättras. Överväg kalibrering eller operatörsutbildning."
-              : "Mätsystemet behöver åtgärdas innan processdata kan anses tillförlitlig."}
+              ? (isZh ? "测量误差偏大，存在误判风险，建议进行量具维护校准或规范操作员手法培训。" : "Measurement system is marginal. Consider calibration or operator training.")
+              : (isZh ? "测量系统变异过大，不能用于生产数据分析！必须先整改测量系统后方可推进 DMAIC。" : "Measurement system is unacceptable and must be fixed before analyzing data.")}
           </p>
         </div>
       )}

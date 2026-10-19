@@ -4,31 +4,34 @@ import { phases, sigmaTable } from "@/data/dmaic-tools";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, CheckCircle2, Target, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const features = [
-  {
-    icon: Target,
-    title: "Målstyrt",
-    description: "Identifiera och kvantifiera problemets omfattning.",
-  },
-  {
-    icon: BarChart3,
-    title: "Strukturerat",
-    description: "Följ en beprövad metodik från problem till lösning.",
-  },
-  {
-    icon: Users,
-    title: "Kundfokus",
-    description: "Basera förbättringar på vad kunden faktiskt värdesätter.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Resultatorienterat",
-    description: "Säkerställ mätbara och varaktiga förbättringar.",
-  },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Index() {
+  const { t, locale } = useLanguage();
+
+  const features = [
+    {
+      icon: Target,
+      title: t("home.features.goalOriented.title", "目标驱动"),
+      description: t("home.features.goalOriented.desc", "量化业务痛点与问题边界，锁定高收益关键指标。"),
+    },
+    {
+      icon: BarChart3,
+      title: t("home.features.structured.title", "结构严谨"),
+      description: t("home.features.structured.desc", "遵循标准 DMAIC 逻辑架构，闭环驱动端到端流程突破。"),
+    },
+    {
+      icon: Users,
+      title: t("home.features.customerFocused.title", "客户之声"),
+      description: t("home.features.customerFocused.desc", "紧贴 VOC 与 CTQ，确保技术改进落地于实际客户价值。"),
+    },
+    {
+      icon: CheckCircle2,
+      title: t("home.features.resultsDriven.title", "结果固化"),
+      description: t("home.features.resultsDriven.desc", "运用统计过程控制(SPC)与防错，确保改进收益持久有效。"),
+    },
+  ];
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -38,26 +41,26 @@ export default function Index() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-              Six Sigma Black Belt
+              {t("home.tag", "六西格玛黑带实战工具集")}
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              Mastering{" "}
+              {t("home.title", "Mastering")}{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                DMAIC
+                {t("home.titleHighlight", "DMAIC")}
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Din ultimata guide till Six Sigma Black Belt-verktyg. Navigera genom varje fas med rätt statistik och metodik.
+              {t("home.subtitle", "您的六西格玛黑带进阶权威指南。以精准统计学为核心，系统化引领从定义到控制的每一步改进流程。")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="gap-2">
                 <Link to="/phase/1">
-                  Börja Guiden <ArrowRight className="h-4 w-4" />
+                  {t("home.startGuide", "开始指南")} <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/calculators">
-                  Kalkylatorer
+                  {t("home.exploreCalculators", "统计计算器")}
                 </Link>
               </Button>
             </div>
@@ -87,9 +90,9 @@ export default function Index() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">DMAIC Faserna</h2>
+            <h2 className="text-3xl font-bold mb-4">{t("home.phasesSectionTitle", "DMAIC 五大阶段")}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Define, Measure, Analyze, Improve, Control - En strukturerad metodik för processförbättring.
+              {t("home.phasesSectionDesc", "Define, Measure, Analyze, Improve, Control — 制造业与卓越运营的成熟改进方法论体系。")}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -105,18 +108,18 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">Sigma-nivåer</h2>
+              <h2 className="text-3xl font-bold mb-4">{t("home.sigmaTableTitle", "六西格玛质量水平参照表 (带 1.5σ 漂移)")}</h2>
               <p className="text-muted-foreground">
-                Förstå sambandet mellan Sigma-nivå, DPMO och processutbyte.
+                {t("home.sigmaTableDesc", "百万分之缺陷数 (DPMO) 与制程良率参照标准")}
               </p>
             </div>
             <div className="bg-card rounded-xl border overflow-hidden shadow-sm">
               <table className="w-full">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Sigma-nivå</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold">DPMO</th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold">Utbyte (%)</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">{t("home.tableLevel", "西格玛水平")}</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold">{t("home.tableDPMO", "DPMO (每百万缺陷数)")}</th>
+                    <th className="px-6 py-4 text-right text-sm font-semibold">{t("home.tableYield", "过程良率 (%)")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -143,14 +146,16 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <div className="bg-gradient-to-br from-primary to-accent rounded-3xl p-8 md:p-12 text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Redo att optimera processen?
+              {locale === "zh" ? "准备好开启过程能力突破了吗？" : "Ready to Optimize Your Processes?"}
             </h2>
             <p className="text-white/90 mb-8 max-w-2xl mx-auto">
-              Få tillgång till över 50 statistiska verktyg med konkreta exempel och applikationsguider.
+              {locale === "zh" 
+                ? "全面获取 50+ 精准统计工具、工业实战案例与端到端黑带落地指南。" 
+                : "Access 50+ industrial statistical tools with step-by-step guidance and real manufacturing examples."}
             </p>
             <Button asChild size="lg" variant="secondary" className="gap-2">
               <Link to="/phase/1">
-                Gå till Define-fasen <ArrowRight className="h-4 w-4" />
+                {locale === "zh" ? "进入 Define (定义) 阶段" : "Start with Define Phase"} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>

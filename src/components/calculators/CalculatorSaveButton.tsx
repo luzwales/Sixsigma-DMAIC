@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface CalculatorSaveButtonProps {
   canSave: boolean;
@@ -22,12 +23,13 @@ export function CalculatorSaveButton({
   onSave,
   className,
 }: CalculatorSaveButtonProps) {
+  const { locale } = useLanguage();
   if (!canSave) return null;
 
   return (
     <div className={cn("space-y-2 border-t pt-3 mt-3", className)}>
       <Textarea
-        placeholder="Lägg till anteckningar (valfritt)..."
+        placeholder={locale === "zh" ? "添加分析备注 (可选)..." : "Add notes (optional)..."}
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         className="h-16 text-sm resize-none"
@@ -42,12 +44,12 @@ export function CalculatorSaveButton({
         {isSaving ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Sparar...
+            {locale === "zh" ? "正在保存..." : "Saving..."}
           </>
         ) : (
           <>
             <Save className="h-4 w-4" />
-            Spara till projekt
+            {locale === "zh" ? "保存至项目归档" : "Save to Project"}
           </>
         )}
       </Button>

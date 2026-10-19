@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, Calculator } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { getLocalizedTool } from "@/i18n/toolTranslations";
 import {
   CpCpkCalculator,
   DPMOCalculator,
@@ -132,8 +134,10 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "audit-plan": HandoverChecklistTool,
 };
 
-export function ToolCard({ tool, phaseColor, phaseId, initiallyExpanded }: ToolCardProps) {
+export function ToolCard({ tool: rawTool, phaseColor, phaseId, initiallyExpanded }: ToolCardProps) {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded || false);
+  const { t, locale } = useLanguage();
+  const tool = getLocalizedTool(rawTool, locale);
 
   useEffect(() => {
     if (initiallyExpanded) {
@@ -186,7 +190,7 @@ export function ToolCard({ tool, phaseColor, phaseId, initiallyExpanded }: ToolC
             >
               <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
-                Interaktivt Verktyg
+                {t("phases.interactiveTool", "交互式分析工具")}
               </h4>
               <CalculatorComponent toolId={tool.id} toolName={tool.name} phase={phaseId} />
             </div>
@@ -194,14 +198,18 @@ export function ToolCard({ tool, phaseColor, phaseId, initiallyExpanded }: ToolC
 
           {/* Usage */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-1">Användning</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-1">
+              {t("phases.usage", "应用场景与方法")}
+            </h4>
             <p className="text-sm text-muted-foreground">{tool.usage}</p>
           </div>
 
           {/* Formula */}
           {tool.formula && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-1">Formel</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-1">
+                {t("phases.formula", "核心计算公式")}
+              </h4>
               <div className="formula">
                 {tool.formula}
               </div>
@@ -211,7 +219,9 @@ export function ToolCard({ tool, phaseColor, phaseId, initiallyExpanded }: ToolC
           {/* Example */}
           {tool.example && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-1">Exempel</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-1">
+                {t("phases.example", "工业实战案例")}
+              </h4>
               <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                 {tool.example}
               </p>

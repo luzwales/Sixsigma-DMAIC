@@ -6,6 +6,8 @@ import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const EXAMPLE_DATA = {
   usl: "10.5",
@@ -15,6 +17,9 @@ const EXAMPLE_DATA = {
 };
 
 export function CpCpkCalculator({ toolId = "capability-cpk", toolName = "Processduglighet (Cp/Cpk)", phase = 2 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [usl, setUsl] = useState("");
   const [lsl, setLsl] = useState("");
   const [mean, setMean] = useState("");
@@ -84,9 +89,9 @@ export function CpCpkCalculator({ toolId = "capability-cpk", toolName = "Process
   };
 
   const getStatusBadge = (value: number) => {
-    if (value >= 1.33) return <span className="text-green-600 dark:text-green-400 font-medium">✓ Kapabel</span>;
-    if (value >= 1) return <span className="text-yellow-600 dark:text-yellow-400 font-medium">⚠ Marginal</span>;
-    return <span className="text-red-600 dark:text-red-400 font-medium">✗ Ej kapabel</span>;
+    if (value >= 1.33) return <span className="text-green-600 dark:text-green-400 font-medium">{isZh ? "✓ 能力充足 (Kapabel)" : "✓ Kapabel"}</span>;
+    if (value >= 1) return <span className="text-yellow-600 dark:text-yellow-400 font-medium">{isZh ? "⚠ 临界状态 (Marginal)" : "⚠ Marginal"}</span>;
+    return <span className="text-red-600 dark:text-red-400 font-medium">{isZh ? "✗ 能力不足 (Ej kapabel)" : "✗ Ej kapabel"}</span>;
   };
 
   const getInterpretation = () => {
@@ -94,15 +99,15 @@ export function CpCpkCalculator({ toolId = "capability-cpk", toolName = "Process
     const issues = [];
     if (result.cpk < 1.33) {
       if (result.cp >= 1.33 && result.cpk < result.cp - 0.1) {
-        issues.push("Processen har potential men är inte centrerad korrekt.");
+        issues.push(isZh ? "过程固有能力充足但严重偏离规格中心，请优先调准过程均值。" : "Processen har potential men är inte centrerad korrekt.");
       } else {
-        issues.push("Processen har för stor variation i förhållande till toleransgränserna.");
+        issues.push(isZh ? "过程总离散变异过大，无法满足当前公差要求，需消除过程特殊原因与随机变异。" : "Processen har för stor variation i förhållande till toleransgränserna.");
       }
     }
     if (result.cpu < result.cpl) {
-      issues.push("Processen tenderar mot övre gränsen (USL).");
+      issues.push(isZh ? "过程均值偏向上规格界限 (USL)，面临上超差风险。" : "Processen tenderar mot övre gränsen (USL).");
     } else if (result.cpl < result.cpu) {
-      issues.push("Processen tenderar mot nedre gränsen (LSL).");
+      issues.push(isZh ? "过程均值偏向下规格界限 (LSL)，面临下超差风险。" : "Processen tenderar mot nedre gränsen (LSL).");
     }
     return issues;
   };
@@ -110,64 +115,61 @@ export function CpCpkCalculator({ toolId = "capability-cpk", toolName = "Process
   return (
     <div className="space-y-4 pt-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
-      <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" />
-          Exempeldata
-        </Button>
-      </div>
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="cp-usl" className="text-xs">USL (Övre gräns)</Label>
+          <Label htmlFor="cp-usl" className="text-xs">{isZh ? "USL (规格上限)" : "USL (Övre gräns)"}</Label>
           <Input
             id="cp-usl"
             type="number"
             step="0.01"
-            placeholder="10.5"
+            placeholder={isZh ? "上限公差，如 10.5" : "10.5"}
             value={usl}
             onChange={(e) => setUsl(e.target.value)}
             className="h-8 text-sm"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cp-lsl" className="text-xs">LSL (Nedre gräns)</Label>
+          <Label htmlFor="cp-lsl" className="text-xs">{isZh ? "LSL (规格下限)" : "LSL (Nedre gräns)"}</Label>
           <Input
             id="cp-lsl"
             type="number"
             step="0.01"
-            placeholder="9.5"
+            placeholder={isZh ? "下限公差，如 9.5" : "9.5"}
             value={lsl}
             onChange={(e) => setLsl(e.target.value)}
             className="h-8 text-sm"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cp-mean" className="text-xs">Medelvärde (μ)</Label>
+          <Label htmlFor="cp-mean" className="text-xs">{isZh ? "过程均值 (μ / Mean)" : "Medelvärde (μ)"}</Label>
           <Input
             id="cp-mean"
             type="number"
             step="0.01"
-            placeholder="10.0"
+            placeholder={isZh ? "样本平均值，如 10.0" : "10.0"}
             value={mean}
             onChange={(e) => setMean(e.target.value)}
             className="h-8 text-sm"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cp-stddev" className="text-xs">Standardavvikelse (σ)</Label>
+          <Label htmlFor="cp-stddev" className="text-xs">{isZh ? "标准差 (σ / StdDev)" : "Standardavvikelse (σ)"}</Label>
           <Input
             id="cp-stddev"
             type="number"
             step="0.001"
-            placeholder="0.15"
+            placeholder={isZh ? "工序变异，如 0.15" : "0.15"}
             value={stdDev}
             onChange={(e) => setStdDev(e.target.value)}
             className="h-8 text-sm"
           />
         </div>
       </div>
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "开始计算过程能力指标" : "Beräkna"}
+      </Button>
 
       {result && (
         <div className="space-y-3">

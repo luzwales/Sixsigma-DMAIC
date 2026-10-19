@@ -14,6 +14,8 @@ import { DataInput } from "./DataInput";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { ExampleDataButton } from "./ExampleDataButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type ChartType = "imr" | "xbar-r" | "xbar-s" | "p" | "c";
 
@@ -70,7 +72,38 @@ interface ControlLimitResult {
   n?: number;
 }
 
-export function ControlLimitsCalculator({ toolId: passedToolId, toolName: passedToolName, phase = 5 }: { toolId?: string; toolName?: string; phase?: number }) {
+export function ControlLimitsCalculator({ toolId = "control-limits", toolName = "Styrgränser (SPC)", phase = 5 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
+  const CHART_CONFIGS: Record<ChartType, { label: string; description: string; type: "variable" | "attribute" }> = {
+    imr: { 
+      label: isZh ? "I-MR 控制图" : "I-MR Chart", 
+      description: isZh ? "单值与移动极差 (单件连续流)" : "Individual & Moving Range", 
+      type: "variable" 
+    },
+    "xbar-r": { 
+      label: isZh ? "Xbar-R 控制图" : "Xbar-R Chart", 
+      description: isZh ? "均值与极差 (子组 n: 2-9)" : "Mean & Range (n: 2-9)", 
+      type: "variable" 
+    },
+    "xbar-s": { 
+      label: isZh ? "Xbar-S 控制图" : "Xbar-S Chart", 
+      description: isZh ? "均值与标准差 (大子组 n ≥ 10)" : "Mean & Std Dev (n >= 10)", 
+      type: "variable" 
+    },
+    p: { 
+      label: isZh ? "p 控制图" : "p-Chart", 
+      description: isZh ? "不合格品率 (可变/恒定样本量)" : "Proportion Defective", 
+      type: "attribute" 
+    },
+    c: { 
+      label: isZh ? "c 控制图" : "c-Chart", 
+      description: isZh ? "单位缺陷数 (恒定检验面积/单元)" : "Defect Count (fixed unit)", 
+      type: "attribute" 
+    },
+  };
+
   const [chartType, setChartType] = useState<ChartType>("imr");
   const [values, setValues] = useState("");
   const [defects, setDefects] = useState("");
@@ -203,15 +236,12 @@ export function ControlLimitsCalculator({ toolId: passedToolId, toolName: passed
     <div className="space-y-4 pt-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-between items-center">
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
-          <Sparkles className="h-3 w-3" />
-          Exempeldata
-        </Button>
+        <ExampleDataButton onLoad={loadExample} />
       </div>
 
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Diagramtyp</Label>
+          <Label className="text-xs">{isZh ? "选择控制图类型 (Chart Type)" : "Chart Type"}</Label>
           <Select value={chartType} onValueChange={(v) => { setChartType(v as ChartType); setResult(null); }}>
             <SelectTrigger className="h-8 text-sm">
               <SelectValue />
@@ -230,16 +260,16 @@ export function ControlLimitsCalculator({ toolId: passedToolId, toolName: passed
         {(chartType === "imr" || chartType === "xbar-r" || chartType === "xbar-s") && (
           <>
             <DataInput
-              label="Mätvärden"
+              label={isZh ? "连续型测量数据 (Values)" : "Measurement Values"}
               value={values}
               onChange={setValues}
               placeholder="49.8, 50.2, 50.1, 49.9..."
               exampleData={EXAMPLE_VALUES}
-              helpText="Separera värden med komma"
+              helpText={isZh ? "数值间以逗号或空格分隔" : "Separate values with comma or space"}
             />
             {(chartType === "xbar-r" || chartType === "xbar-s") && (
               <div className="space-y-1.5">
-                <Label className="text-xs">Undergruppsstorlek</Label>
+                <Label className="text-xs">{isZh ? "子组容量 (Subgroup Size n)" : "Subgroup Size (n)"}</Label>
                 <Input
                   type="number"
                   min="2"
@@ -256,15 +286,16 @@ export function ControlLimitsCalculator({ toolId: passedToolId, toolName: passed
         {(chartType === "p" || chartType === "c") && (
           <>
             <DataInput
-              label="Antal defekter per prov"
+              label={isZh ? "抽样缺陷数 (Defect counts per sample)" : "Defect counts per sample"}
               value={defects}
               onChange={setDefects}
               placeholder="3, 5, 2, 4, 6..."
               exampleData="3, 5, 2, 4, 6, 3, 4, 2, 5, 3"
+              helpText={isZh ? "数值间以逗号或空格分隔" : "Separate values with comma or space"}
             />
             {chartType === "p" && (
               <div className="space-y-1.5">
-                <Label className="text-xs">Stickprovsstorlek (n)</Label>
+                <Label className="text-xs">{isZh ? "检验样本容量 (Sample Size n)" : "Sample Size (n)"}</Label>
                 <Input
                   type="number"
                   min="1"
@@ -279,21 +310,23 @@ export function ControlLimitsCalculator({ toolId: passedToolId, toolName: passed
         )}
       </div>
 
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna styrgränser</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "计算 SPC 动态控制界限 (±3σ)" : "Calculate Control Limits"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+          <div className="p-4 bg-muted/50 rounded-lg space-y-2 border">
             <div className="flex justify-between items-center text-destructive">
-              <span className="text-sm font-medium">UCL (övre gräns)</span>
+              <span className="text-sm font-semibold">UCL ({isZh ? "上控制界限 +3σ" : "Upper Control Limit"})</span>
               <span className="font-bold font-mono text-lg">{result.ucl.toFixed(4)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm">CL (centrallinje)</span>
+              <span className="text-sm font-medium">CL ({isZh ? "过程中心线 Mean" : "Center Line"})</span>
               <span className="font-bold font-mono text-lg">{result.cl.toFixed(4)}</span>
             </div>
             <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
-              <span className="text-sm font-medium">LCL (nedre gräns)</span>
+              <span className="text-sm font-semibold">LCL ({isZh ? "下控制界限 -3σ" : "Lower Control Limit"})</span>
               <span className="font-bold font-mono text-lg">{result.lcl.toFixed(4)}</span>
             </div>
           </div>

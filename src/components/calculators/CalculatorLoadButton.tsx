@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FolderOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface SavedCalc {
   id: string;
@@ -22,6 +23,7 @@ export function CalculatorLoadButton({
   onLoad,
   className,
 }: CalculatorLoadButtonProps) {
+  const { locale } = useLanguage();
   if (!savedCalculation && !isLoading) return null;
 
   return (
@@ -37,7 +39,7 @@ export function CalculatorLoadButton({
       ) : (
         <FolderOpen className="h-3.5 w-3.5" />
       )}
-      Ladda sparad data
+      {locale === "zh" ? "加载已存历史数据" : "Load Saved Data"}
     </Button>
   );
 }

@@ -13,8 +13,10 @@ import { toPng } from "html-to-image";
 import { checkWesternElectricRules, WEViolation, ChartDataPoint } from "@/lib/western-electric-rules";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ControlCharts() {
+  const { locale, t } = useLanguage();
   // X̄-R Chart State
   const [xbarData, setXbarData] = useState("");
   const [xbarSubgroupSize, setXbarSubgroupSize] = useState(5);
@@ -474,9 +476,11 @@ export default function ControlCharts() {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Styrdiagram (SPC)</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {t("controlCharts.title", "统计过程控制图 (SPC)")}
+          </h1>
           <p className="text-muted-foreground">
-            Interaktiva styrdiagram för Statistical Process Control. Mata in data för att beräkna kontrollgränser och visualisera processens stabilitet.
+            {t("controlCharts.desc", "休哈特控制图、判异准则 (Western Electric) 与工序稳定性监控工具。")}
           </p>
         </div>
 
@@ -898,40 +902,40 @@ export default function ControlCharts() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
-              Western Electric-regler
+              {t("controlCharts.rulesTitle", "Western Electric 判异准则说明")}
             </CardTitle>
             <CardDescription>
-              Regler för att identifiera specialorsaker till variation i styrdiagram
+              {t("controlCharts.rulesSubtitle", "用于识别控制图中非偶然原因 (Special Cause) 引发的异常变异")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 1:</strong> En punkt utanför 3σ (kontrollgräns)
+                  {t("controlCharts.rule1", "准则 1: 单点落在 3σ 控制限外 (严重失控)")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 2:</strong> 9 punkter i rad på samma sida om centerlinjen
+                  {t("controlCharts.rule2", "准则 2: 连续 9 点落在中心线同一侧 (过程均值偏移)")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 3:</strong> 6 punkter i rad stigande eller fallande
+                  {t("controlCharts.rule3", "准则 3: 连续 6 点单调递增或递减 (持续漂移或磨损)")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 4:</strong> 14 punkter i rad alternerande upp och ner
+                  {t("controlCharts.rule4", "准则 4: 连续 14 点交替上下波动 (系统性周期波动)")}
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 5:</strong> 2 av 3 punkter utanför 2σ på samma sida
+                  {t("controlCharts.rule5", "准则 5: 连续 3 点中有 2 点超出 2σ 预警线 (早期报警)")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 6:</strong> 4 av 5 punkter utanför 1σ på samma sida
+                  {t("controlCharts.rule6", "准则 6: 连续 5 点中有 4 点超出 1σ 警戒线")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 7:</strong> 15 punkter i rad inom 1σ (stratifiering)
+                  {t("controlCharts.rule7", "准则 7: 连续 15 点集中在 1σ 内部 (数据分层或虚假数据)")}
                 </div>
                 <div className="p-3 bg-muted rounded-lg">
-                  <strong>Regel 8:</strong> 8 punkter i rad utanför 1σ (blandning)
+                  {t("controlCharts.rule8", "准则 8: 连续 8 点在 1σ 外部且无一点在内部 (两组总体混合)")}
                 </div>
               </div>
             </div>
@@ -941,25 +945,29 @@ export default function ControlCharts() {
         {/* Info Section */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Om styrdiagram</CardTitle>
+            <CardTitle>{locale === "zh" ? "控制图类型与选型速查" : "About Control Charts & Selection"}</CardTitle>
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none text-muted-foreground">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-foreground font-semibold mb-2">Kontinuerliga data</h4>
+                <h4 className="text-foreground font-semibold mb-2">
+                  {locale === "zh" ? "计量型连续数据 (Variables)" : "Continuous Variables"}
+                </h4>
                 <ul className="space-y-1">
-                  <li><strong>X̄-R:</strong> Delgrupper med 2-10 mätningar</li>
-                  <li><strong>X̄-S:</strong> Delgrupper med &gt;10 mätningar (använder standardavvikelse)</li>
-                  <li><strong>I-MR:</strong> Individuella mätningar utan delgrupper</li>
+                  <li><strong>X̄-R:</strong> {locale === "zh" ? "子组容量 2~9 的均值与极差图" : "Subgroups with 2-9 measurements"}</li>
+                  <li><strong>X̄-S:</strong> {locale === "zh" ? "子组容量 ≥ 10 的均值与标准差图" : "Subgroups with >= 10 measurements (std dev)"}</li>
+                  <li><strong>I-MR:</strong> {locale === "zh" ? "单值与移动极差图 (无子组连续抽样)" : "Individual measurements without subgrouping"}</li>
                 </ul>
               </div>
               <div>
-                <h4 className="text-foreground font-semibold mb-2">Attributdata</h4>
+                <h4 className="text-foreground font-semibold mb-2">
+                  {locale === "zh" ? "计数型离散数据 (Attributes)" : "Attribute Defect Data"}
+                </h4>
                 <ul className="space-y-1">
-                  <li><strong>p-diagram:</strong> Andel defekta (konstant n)</li>
-                  <li><strong>np-diagram:</strong> Antal defekta (konstant n)</li>
-                  <li><strong>c-diagram:</strong> Antal fel per enhet (konstant enhet)</li>
-                  <li><strong>u-diagram:</strong> Fel per enhet (variabel enhetsstorlek)</li>
+                  <li><strong>p 图:</strong> {locale === "zh" ? "样本容量可变的不合格品率监控" : "Fraction defective (variable n)"}</li>
+                  <li><strong>np 图:</strong> {locale === "zh" ? "样本容量恒定的不合格品件数监控" : "Defective item counts (constant n)"}</li>
+                  <li><strong>c 图:</strong> {locale === "zh" ? "恒定检验单位上的总缺陷数 (泊松)" : "Defect counts per constant unit (Poisson)"}</li>
+                  <li><strong>u 图:</strong> {locale === "zh" ? "可变检验单位上的单位缺陷数 (DPU)" : "Defects per unit area/sample (variable size)"}</li>
                 </ul>
               </div>
             </div>

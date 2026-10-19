@@ -31,6 +31,7 @@ import {
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { toast } from "sonner";
 
 // Flow steps structure
@@ -68,6 +69,9 @@ const TEMPLATES = {
 };
 
 export default function VSM() {
+  const { locale, t } = useLanguage();
+  const isZh = locale === "zh";
+
   const [customerDemand, setCustomerDemand] = useState<string>("120");
   const [shiftHours, setShiftHours] = useState<string>("8");
   const [steps, setSteps] = useState<VsmProcessStep[]>(TEMPLATES.manufacturing.steps);
@@ -207,11 +211,15 @@ export default function VSM() {
               <div className="absolute right-0 top-0 h-40 w-40 bg-primary/2.5 rounded-full blur-3xl pointer-events-none" />
               <div className="space-y-1.5 max-w-3xl">
                 <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                  <Workflow className="h-3.5 w-3.5" /> Lean Metodik
+                  <Workflow className="h-3.5 w-3.5" /> {isZh ? "精益制造与流程优化" : "Lean Methodology"}
                 </div>
-                <h1 className="text-3xl font-extrabold tracking-tight">Värdeflödesanalys (Value Stream Mapping)</h1>
+                <h1 className="text-3xl font-extrabold tracking-tight">
+                  {isZh ? "价值流图分析 (Value Stream Mapping - VSM)" : "Value Stream Mapping (VSM)"}
+                </h1>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Kartlägg informations- och materialflöden i din verksamhet. VSM identifierar flaskhalsar, överproduktion och slöseri genom att visualisera värdeskapande processtid (VA) i relation till icke-värdeskapande ledtid (NVA).
+                  {isZh 
+                    ? "全景映射企业物料流与信息流。通过量化增值作业时间 (VA) 与非增值等待时间 (NVA)，精准锁定工序瓶颈、在制品 (WIP) 堆积与生产浪费。" 
+                    : "Map information and material flows across your organization. VSM isolates bottlenecks, overproduction, and lead time waste by comparing Value-Added (VA) process time to Non-Value-Added (NVA) queue times."}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full md:w-auto">
@@ -222,7 +230,9 @@ export default function VSM() {
                   className="flex items-center gap-2 text-xs font-semibold cursor-pointer py-2 px-3 shrink-0"
                 >
                   <HelpCircle className="h-4 w-4" />
-                  {showHelp ? "Dölj guide" : "Förklara VSM & uträkningar"}
+                  {showHelp 
+                    ? (isZh ? "收起指南" : "Hide Guide") 
+                    : (isZh ? "VSM 指南与计算原理" : "Explain VSM & Formulas")}
                 </Button>
                 <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
               </div>
@@ -313,22 +323,25 @@ export default function VSM() {
                 <Card className="border border-primary/5 shadow-3xs">
                   <CardHeader className="pb-3 border-b border-primary/5">
                     <CardTitle className="text-sm font-bold flex items-center gap-2">
-                      <Users className="h-4 w-4 text-primary" /> Kundens efterfrågan & Takt
+                      <Users className="h-4 w-4 text-primary" /> 
+                      {isZh ? "客户需求速率与节拍基线" : "Customer Demand & Takt"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-4">
                     <div className="flex gap-2">
                       <Button variant="outline" size="xs" onClick={() => loadTemplate("manufacturing")} className="flex-1 text-xs py-1.5">
-                        ⚙️ Tillverkning (Standard)
+                        ⚙️ {isZh ? "离散制造模板 (车间)" : "Manufacturing"}
                       </Button>
                       <Button variant="outline" size="xs" onClick={() => loadTemplate("administrative")} className="flex-1 text-xs py-1.5">
-                        📂 Administrativt
+                        📂 {isZh ? "业务流程模板 (OA/服务)" : "Administrative"}
                       </Button>
                     </div>
 
                     <div className="space-y-3 pt-2">
                       <div className="space-y-1">
-                        <Label htmlFor="customerDemand" className="text-xs font-semibold">Kundens efterfrågan / Dygn</Label>
+                        <Label htmlFor="customerDemand" className="text-xs font-semibold">
+                          {isZh ? "客户每日需求量 (Demand / Day)" : "Customer Demand / Day"}
+                        </Label>
                         <div className="relative">
                           <Input 
                             id="customerDemand" 
@@ -337,12 +350,16 @@ export default function VSM() {
                             onChange={e => setCustomerDemand(e.target.value)} 
                             className="text-sm font-medium"
                           />
-                          <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">enh / dygn</span>
+                          <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">
+                            {isZh ? "件 / 天" : "units / day"}
+                          </span>
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <Label htmlFor="shiftHours" className="text-xs font-semibold">Effektiv arbetstid / Skift</Label>
+                        <Label htmlFor="shiftHours" className="text-xs font-semibold">
+                          {isZh ? "每日有效作业净工时 (Shift Hours)" : "Effective Shift Hours / Day"}
+                        </Label>
                         <div className="relative">
                           <Input 
                             id="shiftHours" 
@@ -352,18 +369,24 @@ export default function VSM() {
                             onChange={e => setShiftHours(e.target.value)} 
                             className="text-sm font-medium"
                           />
-                          <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">timmar</span>
+                          <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">
+                            {isZh ? "小时" : "hours"}
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="p-3 bg-muted/20 border rounded-lg space-y-1 text-center">
-                      <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Beräknad Kundtakt (Takt Time)</div>
+                      <div className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">
+                        {isZh ? "客户节拍时间 (Takt Time)" : "Calculated Takt Time"}
+                      </div>
                       <div className="text-2xl font-black font-sans text-primary">
                         {customerTaktSeconds.toFixed(1)}s
                       </div>
                       <p className="text-[10px] text-muted-foreground leading-snug">
-                        Kunden förbrukar 1 enhet var {customerTaktSeconds.toFixed(0)}e sekund. Alla processteg bör ligga under denna tid!
+                        {isZh 
+                          ? `客户每 ${customerTaktSeconds.toFixed(0)} 秒消耗 1 件产品。所有生产工序的单件周期时间 (C/T) 必须低于此上限！` 
+                          : `Customer consumes 1 unit every ${customerTaktSeconds.toFixed(0)}s. All upstream process cycles must operate below this rhythm!`}
                       </p>
                     </div>
                   </CardContent>
@@ -378,10 +401,12 @@ export default function VSM() {
                   </CardHeader>
                   <CardContent className="pt-4 space-y-3">
                     <div className="space-y-1">
-                      <Label htmlFor="newStepName" className="text-xs">Steg/Aktivitet</Label>
+                      <Label htmlFor="newStepName" className="text-xs">
+                        {isZh ? "工序名称 (Step Name)" : "Step Name"}
+                      </Label>
                       <Input 
                         id="newStepName" 
-                        placeholder="T.ex. Montering, Lackering" 
+                        placeholder={isZh ? "如：激光切割、冲压、焊接、包装..." : "T.ex. Montering, Lackering"} 
                         value={newStepName} 
                         onChange={e => setNewStepName(e.target.value)}
                         className="text-xs"
@@ -390,22 +415,26 @@ export default function VSM() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label htmlFor="newCycleTime" className="text-xs">Cykeltid C/T (sek)</Label>
+                        <Label htmlFor="newCycleTime" className="text-xs">
+                          {isZh ? "周期时间 C/T (秒)" : "Cykeltid C/T (sek)"}
+                        </Label>
                         <Input 
                           id="newCycleTime" 
                           type="number" 
-                          placeholder="Ex. 180" 
+                          placeholder={isZh ? "如：180" : "Ex. 180"} 
                           value={newCycleTime} 
                           onChange={e => setNewCycleTime(e.target.value)}
                           className="text-xs"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="newCOTime" className="text-xs">Ställtid C/O (min)</Label>
+                        <Label htmlFor="newCOTime" className="text-xs">
+                          {isZh ? "换型时间 C/O (分)" : "Ställtid C/O (min)"}
+                        </Label>
                         <Input 
                           id="newCOTime" 
                           type="number" 
-                          placeholder="Ex. 15" 
+                          placeholder={isZh ? "如：15" : "Ex. 15"} 
                           value={newCOTime} 
                           onChange={e => setNewCOTime(e.target.value)}
                           className="text-xs"
@@ -415,7 +444,9 @@ export default function VSM() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label htmlFor="newUptime" className="text-xs">Uptime (%)</Label>
+                        <Label htmlFor="newUptime" className="text-xs">
+                          {isZh ? "开动率 Uptime (%)" : "Uptime (%)"}
+                        </Label>
                         <Input 
                           id="newUptime" 
                           type="number" 
@@ -426,7 +457,9 @@ export default function VSM() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="newOperators" className="text-xs">Operatörer</Label>
+                        <Label htmlFor="newOperators" className="text-xs">
+                          {isZh ? "操作工人数" : "Operatörer"}
+                        </Label>
                         <Input 
                           id="newOperators" 
                           type="number" 
@@ -440,23 +473,24 @@ export default function VSM() {
 
                     <div className="space-y-1 pt-1">
                       <Label htmlFor="newInventory" className="text-xs flex items-center gap-1">
-                        <Layers className="h-3.5 w-3.5 text-amber-500" /> Lager efter steget (enheter)
+                        <Layers className="h-3.5 w-3.5 text-amber-500" /> 
+                        {isZh ? "工序后在制品缓冲区库存 (件)" : "Lager efter steget (enheter)"}
                       </Label>
                       <Input 
                         id="newInventory" 
                         type="number" 
-                        placeholder="Ex. 50" 
+                        placeholder={isZh ? "如：50" : "Ex. 50"} 
                         value={newInventory} 
                         onChange={e => setNewInventory(e.target.value)}
                         className="text-xs"
                       />
                       <span className="text-[10px] text-muted-foreground block">
-                        Lagrade halvfabrikat / köande ärenden före nästa operation.
+                        {isZh ? "存储在工序间的在制品 (WIP) / 待处理堆积工单。" : "Lagrade halvfabrikat / köande ärenden före nästa operation."}
                       </span>
                     </div>
 
                     <Button onClick={addStep} size="sm" className="w-full mt-2 font-medium">
-                      Infoga processsteg
+                      {isZh ? "插入工序到价值流" : "Infoga processsteg"}
                     </Button>
                   </CardContent>
                 </Card>

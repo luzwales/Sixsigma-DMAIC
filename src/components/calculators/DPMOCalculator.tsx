@@ -7,14 +7,19 @@ import { sigmaTable } from "@/data/dmaic-tools";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
 import { CalculatorLoadButton } from "./CalculatorLoadButton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
-const EXAMPLES = {
-  manufacturing: { defects: "42", units: "1000", opportunities: "5", label: "Tillverkning" },
-  service: { defects: "15", units: "500", opportunities: "8", label: "Tjänsteprocess" },
-  assembly: { defects: "8", units: "2000", opportunities: "3", label: "Montering" },
-};
+const getExamples = (isZh: boolean) => ({
+  manufacturing: { defects: "42", units: "1000", opportunities: "5", label: isZh ? "车间制造" : "Manufacturing" },
+  service: { defects: "15", units: "500", opportunities: "8", label: isZh ? "事务流程" : "Service Flow" },
+  assembly: { defects: "8", units: "2000", opportunities: "3", label: isZh ? "总装产线" : "Assembly Line" },
+});
 
 export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå", phase = 2 }: { toolId?: string; toolName?: string; phase?: number }) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+  const EXAMPLES = getExamples(isZh);
+
   const [defects, setDefects] = useState("");
   const [units, setUnits] = useState("");
   const [opportunities, setOpportunities] = useState("");
@@ -102,12 +107,20 @@ export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå
   };
 
   const getSigmaDescription = (sigma: number) => {
-    if (sigma >= 6) return "World Class kvalitet";
-    if (sigma >= 5) return "Utmärkt kvalitet";
-    if (sigma >= 4) return "Bra kvalitet";
-    if (sigma >= 3) return "Acceptabel kvalitet";
-    if (sigma >= 2) return "Behöver förbättring";
-    return "Kritisk nivå";
+    if (isZh) {
+      if (sigma >= 6) return "世界级六西格玛标杆 (World Class)";
+      if (sigma >= 5) return "卓越制程质量水平 (Excellent)";
+      if (sigma >= 4) return "优良工业级制造质量 (Good)";
+      if (sigma >= 3) return "行业基础合格水准 (3σ 常规底线)";
+      if (sigma >= 2) return "缺陷频发，急需黑带立项攻坚";
+      return "严重不可接受的极高失控率";
+    }
+    if (sigma >= 6) return "World Class quality (6σ)";
+    if (sigma >= 5) return "Excellent quality (5σ)";
+    if (sigma >= 4) return "Good industrial quality (4σ)";
+    if (sigma >= 3) return "Acceptable baseline (3σ)";
+    if (sigma >= 2) return "Needs immediate DMAIC intervention";
+    return "Critical defect level";
   };
 
   return (
@@ -130,7 +143,9 @@ export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå
 
       <div className="grid grid-cols-3 gap-2">
         <div className="space-y-1.5">
-          <Label htmlFor="dpmo-defects" className="text-xs">Antal defekter</Label>
+          <Label htmlFor="dpmo-defects" className="text-xs">
+            {isZh ? "检出缺陷数 (D)" : "Total Defects (D)"}
+          </Label>
           <Input
             id="dpmo-defects"
             type="number"
@@ -141,7 +156,9 @@ export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="dpmo-units" className="text-xs">Antal enheter</Label>
+          <Label htmlFor="dpmo-units" className="text-xs">
+            {isZh ? "检验抽样数 (N)" : "Audited Units (N)"}
+          </Label>
           <Input
             id="dpmo-units"
             type="number"
@@ -152,7 +169,9 @@ export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="dpmo-opp" className="text-xs">Möjligheter/enhet</Label>
+          <Label htmlFor="dpmo-opp" className="text-xs">
+            {isZh ? "单件缺陷机会数 (O)" : "Opportunities / Unit (O)"}
+          </Label>
           <Input
             id="dpmo-opp"
             type="number"
@@ -163,38 +182,44 @@ export function DPMOCalculator({ toolId = "dpmo", toolName = "DPMO & Sigma-nivå
           />
         </div>
       </div>
-      <Button onClick={calculate} size="sm" className="w-full">Beräkna</Button>
+      <Button onClick={calculate} size="sm" className="w-full">
+        {isZh ? "核算 DPMO 与西格玛等级" : "Calculate DPMO & Sigma"}
+      </Button>
 
       {result && (
         <div className="space-y-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground mb-1">Sigma-nivå</div>
-            <div className={`text-4xl font-bold ${getSigmaColor(result.sigma)}`}>
+          <div className="p-4 bg-muted/50 rounded-lg text-center border">
+            <div className="text-xs text-muted-foreground mb-1">
+              {isZh ? "过程西格玛水平 (含 1.5σ 长期漂移)" : "Sigma Level (with 1.5σ shift)"}
+            </div>
+            <div className={`text-4xl font-extrabold ${getSigmaColor(result.sigma)}`}>
               {result.sigma}σ
             </div>
-            <div className="text-sm text-muted-foreground mt-1">
+            <div className="text-sm font-medium text-foreground mt-1">
               {getSigmaDescription(result.sigma)}
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">DPMO</div>
-              <div className="text-lg font-bold font-mono">{result.dpmo.toLocaleString()}</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "百万机会缺陷数 (DPMO)" : "DPMO"}</div>
+              <div className="text-lg font-bold font-mono text-primary">{result.dpmo.toLocaleString()}</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">Utbyte</div>
-              <div className="text-lg font-bold">{result.yield.toFixed(2)}%</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "过程良率 (Yield)" : "Process Yield"}</div>
+              <div className="text-lg font-bold font-mono">{result.yield.toFixed(2)}%</div>
             </div>
-            <div className="p-2 bg-muted/30 rounded">
-              <div className="text-xs text-muted-foreground">DPU</div>
+            <div className="p-2 bg-muted/30 rounded border">
+              <div className="text-xs text-muted-foreground">{isZh ? "单位缺陷数 (DPU)" : "Defects / Unit (DPU)"}</div>
               <div className="text-lg font-bold font-mono">{result.dpu.toFixed(4)}</div>
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
-            <strong>Tolkning:</strong> Med {result.dpmo.toLocaleString()} defekter per miljon möjligheter 
-            producerar processen {result.yield.toFixed(2)}% felfria möjligheter.
+          <div className="text-xs text-muted-foreground bg-muted/30 p-2.5 rounded border leading-relaxed">
+            <strong>{isZh ? "统计结论解读：" : "Interpretation: "}</strong>
+            {isZh 
+              ? `在每 1,000,000 次缺陷机会中预计发生 ${result.dpmo.toLocaleString()} 个缺陷。当前过程产出 ${result.yield.toFixed(2)}% 的完全无缺陷合格机会。`
+              : `At ${result.dpmo.toLocaleString()} defects per million opportunities, the process achieves ${result.yield.toFixed(2)}% defect-free output.`}
           </div>
         </div>
       )}

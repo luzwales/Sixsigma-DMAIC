@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Phase } from "@/data/dmaic-tools";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface PhaseCardProps {
   phase: Phase;
@@ -9,6 +10,10 @@ interface PhaseCardProps {
 }
 
 export function PhaseCard({ phase, index }: PhaseCardProps) {
+  const { locale, t } = useLanguage();
+  const name = locale === "zh" ? phase.nameZh || phase.name : phase.name;
+  const description = locale === "zh" ? phase.descriptionZh || phase.description : phase.description;
+
   return (
     <Link
       to={`/phase/${phase.id}`}
@@ -29,18 +34,18 @@ export function PhaseCard({ phase, index }: PhaseCardProps) {
         <div className="text-4xl mb-4">{phase.icon}</div>
 
         {/* Content */}
-        <h3 className="text-2xl font-bold mb-2">{phase.name}</h3>
+        <h3 className="text-2xl font-bold mb-2">{name}</h3>
         <p className="text-white/90 text-sm mb-4 line-clamp-2">
-          {phase.description}
+          {description}
         </p>
 
         {/* Tool count */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-white/80">
-            {phase.tools.length} verktyg
+            {t("common.toolsCount", `${phase.tools.length} 个工具`).replace("{{count}}", String(phase.tools.length))}
           </span>
           <span className="flex items-center gap-1 text-sm font-medium group-hover:gap-2 transition-all">
-            Utforska <ArrowRight className="h-4 w-4" />
+            {t("common.explore", "探索")} <ArrowRight className="h-4 w-4" />
           </span>
         </div>
 

@@ -8,6 +8,7 @@ import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveBut
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { ShieldAlert, Plus, Trash2, HelpCircle } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface RiskItem {
   id: string;
@@ -22,24 +23,27 @@ interface RiskItem {
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", toolName = "Initial Riskbedömning", phase = 1 }: Props) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [risks, setRisks] = useState<RiskItem[]>([
     {
       id: "1",
-      description: "Nyckelresurser har begränsad tid pga andra samtidiga linjeaktiviteter.",
-      category: "Resurser",
+      description: isZh ? "关键工艺工程师与模具专家因产线日常救火，难以全勤投入 DMAIC 项目" : "Nyckelresurser har begränsad tid pga andra samtidiga linjeaktiviteter.",
+      category: isZh ? "资源与团队" : "Resurser",
       severity: 4,
       probability: 3,
-      mitigation: "Säkra skriftligt godkännande och resursallokering från linjechefer; regelbundna avstämningar i styrgruppen.",
-      responsible: "Projektledare"
+      mitigation: isZh ? "由厂长与倡导者 (Champion) 签署书面工时释放授权书，每周固定锁定 2 个半天专项攻坚" : "Säkra skriftligt godkännande och resursallokering från linjechefer; regelbundna avstämningar i styrgruppen.",
+      responsible: isZh ? "黑带组长 / 生产总监" : "Projektledare"
     },
     {
       id: "2",
-      description: "Bristfällig datakvalitet i nuvarande ERP-system försvårar mätskede.",
-      category: "Teknik/Data",
+      description: isZh ? "车间现有 MES/SCADA 采集的注塑压力与模温数据存在断点与视差" : "Bristfällig datakvalitet i nuvarande ERP-system försvårar mätskede.",
+      category: isZh ? "技术与数据" : "Teknik/Data",
       severity: 3,
       probability: 4,
-      mitigation: "Sätt upp manuella loggningsrutiner som komplement under pilotmätning.",
-      responsible: "Black Belt / Dataanalytiker"
+      mitigation: isZh ? "在 Measure 阶段前先执行 MSA 检验，并在试点机台加装高精度外挂温度记录仪" : "Sätt upp manuella loggningsrutiner som komplement under pilotmätning.",
+      responsible: isZh ? "质量工程师 / 数据分析员" : "Black Belt / Dataanalytiker"
     }
   ]);
 
@@ -144,17 +148,19 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
         <div className="flex items-center justify-between">
           <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="h-4 w-4 text-primary" />
-            Identifierade Projekt- och Processrisker
+            {isZh ? "已识别的项目与工序潜在风险清单" : "Identifierade Projekt- och Processrisker"}
           </Label>
           <Button type="button" variant="outline" size="xs" onClick={addRisk} className="h-7 text-xs flex items-center gap-1">
             <Plus className="h-3 w-3" />
-            Lägg till risk
+            {isZh ? "新增风险项" : "Lägg till risk"}
           </Button>
         </div>
 
         {risks.length === 0 ? (
           <div className="border border-dashed border-muted rounded-lg p-6 text-center text-muted-foreground text-sm">
-            Inga risker registrerade ännu. Klicka på "Lägg till risk" eller ladda exempeldata för att starta.
+            {isZh 
+              ? "暂未登记立项风险。点击“新增风险项”或加载示例数据开始评估。" 
+              : "Inga risker registrerade ännu. Klicka på 'Lägg till risk' eller ladda exempeldata för att starta."}
           </div>
         ) : (
           <div className="space-y-3">
@@ -163,7 +169,9 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
               return (
                 <div key={risk.id} className={`border rounded-lg p-3 space-y-2 transition-colors ${getRiskColor(rpn)}`}>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-mono font-medium text-slate-500">Risk #{index + 1}</span>
+                    <span className="text-xs font-mono font-medium text-slate-500">
+                      {isZh ? `风险项 #${index + 1}` : `Risk #${index + 1}`}
+                    </span>
                     <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-red-500 hover:bg-red-50" onClick={() => removeRisk(risk.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -171,28 +179,32 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                     <div className="md:col-span-4 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Beskrivning</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-500">
+                        {isZh ? "风险描述 (潜在失效与阻碍)" : "Beskrivning"}
+                      </Label>
                       <Input
                         value={risk.description}
                         onChange={e => updateRisk(risk.id, "description", e.target.value)}
-                        placeholder="Vad kan gå fel?"
+                        placeholder={isZh ? "可能发生什么异常或阻碍？" : "Vad kan gå fel?"}
                         className="h-8 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
                       />
                     </div>
 
                     <div className="md:col-span-2 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Kategori</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-500">
+                        {isZh ? "风险类别" : "Kategori"}
+                      </Label>
                       <Input
                         value={risk.category}
                         onChange={e => updateRisk(risk.id, "category", e.target.value)}
-                        placeholder="t.ex. Resurser"
+                        placeholder={isZh ? "如：工艺、资源、技术..." : "t.ex. Resurser"}
                         className="h-8 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
                       />
                     </div>
 
                     <div className="md:col-span-1.5 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-0.5" title="Allvarlighet (1-5)">
-                        Allv. (1-5)
+                      <Label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-0.5" title="严重度 (1-5)">
+                        {isZh ? "严重度 (1-5)" : "Allv. (1-5)"}
                       </Label>
                       <Input
                         type="number"
@@ -200,13 +212,13 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
                         max="5"
                         value={risk.severity}
                         onChange={e => updateRisk(risk.id, "severity", Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
-                        className="h-8 text-xs bg-white dark:bg-slate-900text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
+                        className="h-8 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
                       />
                     </div>
 
                     <div className="md:col-span-1.5 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-0.5" title="Sannolikhet (1-5)">
-                        Sann. (1-5)
+                      <Label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-0.5" title="发生概率 (1-5)">
+                        {isZh ? "概率 (1-5)" : "Sann. (1-5)"}
                       </Label>
                       <Input
                         type="number"
@@ -219,7 +231,9 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
                     </div>
 
                     <div className="md:col-span-1 flex flex-col justify-end items-center pb-2">
-                      <span className="text-[9px] uppercase font-bold text-slate-500 block mb-1">Index</span>
+                      <span className="text-[9px] uppercase font-bold text-slate-500 block mb-1">
+                        {isZh ? "风险指数" : "Index"}
+                      </span>
                       <div className={`px-2 py-0.5 rounded text-xs font-bold leading-none ${getRiskBadgeColor(rpn)}`}>
                         {rpn}
                       </div>
@@ -228,20 +242,24 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
                     <div className="md:col-span-8 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Planerad Motåtgärd / Mitigerande insats</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-500">
+                        {isZh ? "前置预防消减对策与应急预案" : "Planerad Motåtgärd / Mitigerande insats"}
+                      </Label>
                       <Input
                         value={risk.mitigation}
                         onChange={e => updateRisk(risk.id, "mitigation", e.target.value)}
-                        placeholder="Hur reducerar vi den här risken?"
+                        placeholder={isZh ? "如何提前消除或降低该风险？" : "Hur reducerar vi den här risken?"}
                         className="h-8 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
                       />
                     </div>
                     <div className="md:col-span-4 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Ansvarig</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-500">
+                        {isZh ? "责任人" : "Ansvarig"}
+                      </Label>
                       <Input
                         value={risk.responsible}
                         onChange={e => updateRisk(risk.id, "responsible", e.target.value)}
-                        placeholder="Vem bär ansvaret?"
+                        placeholder={isZh ? "谁负责跟踪落实？" : "Vem bär ansvaret?"}
                         className="h-8 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
                       />
                     </div>
@@ -255,12 +273,12 @@ export function DefineRiskAssessmentTool({ toolId = "define-risk-assessment", to
 
       <div className="space-y-2">
         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-          Övergripande Riskprofil & Sammanfattning
+          {isZh ? "综合风险画像与管理层支持诉求" : "Övergripande Riskprofil & Sammanfattning"}
         </Label>
         <Textarea
           value={overarchingSummary}
           onChange={e => setOverarchingSummary(e.target.value)}
-          placeholder="Sammanfatta projektets riskprofil och eventuella kritiska åtgärder som kräver ledningsstöd..."
+          placeholder={isZh ? "归纳项目整体风险水平，以及需要倡导者 (Champion) 和管理层前置协调的关键资源支持..." : "Sammanfatta projektets riskprofil och eventuella kritiska åtgärder som kräver ledningsstöd..."}
           className="text-xs h-16 resize-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800"
         />
       </div>
