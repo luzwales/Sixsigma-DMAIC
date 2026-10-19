@@ -17,6 +17,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ControlCharts() {
   const { locale, t } = useLanguage();
+  const isZh = locale === "zh";
   // X̄-R Chart State
   const [xbarData, setXbarData] = useState("");
   const [xbarSubgroupSize, setXbarSubgroupSize] = useState(5);
