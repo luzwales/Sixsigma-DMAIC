@@ -79,8 +79,8 @@ export default function Projects() {
       if (error) {
         console.error("fetchProjects error:", error);
         toast({ 
-          title: "Kunde inte hämta projekt", 
-          description: error.message || "Kontrollera dina rättigheter eller anslutning.",
+          title: isZh ? "获取项目列表失败" : "Failed to load projects", 
+          description: error.message || (isZh ? "请检查权限或网络连接。" : "Check your permissions or network connection."),
           variant: "destructive" 
         });
       } else {
@@ -89,8 +89,8 @@ export default function Projects() {
     } catch (err: any) {
       console.error("fetchProjects exception:", err);
       toast({ 
-        title: "Kunde inte hämta projekt", 
-        description: err.message || "Ett oväntat fel uppstod.",
+        title: isZh ? "获取项目列表异常" : "Failed to load projects", 
+        description: err.message || (isZh ? "发生意外网络错误。" : "An unexpected error occurred."),
         variant: "destructive" 
       });
     } finally {
@@ -100,7 +100,10 @@ export default function Projects() {
 
   const createProject = async () => {
     if (!newProjectName.trim()) {
-      toast({ title: "Ange ett projektnamn", variant: "destructive" });
+      toast({ 
+        title: isZh ? "请输入项目名称" : "Please enter a project name", 
+        variant: "destructive" 
+      });
       return;
     }
 
@@ -121,9 +124,12 @@ export default function Projects() {
     setIsCreating(false);
 
     if (error) {
-      toast({ title: "Kunde inte skapa projekt", variant: "destructive" });
+      toast({ 
+        title: isZh ? "立项创建失败" : "Failed to create project", 
+        variant: "destructive" 
+      });
     } else {
-      toast({ title: "Projekt skapat!" });
+      toast({ title: isZh ? "新项目已成功创建！" : "Project created successfully!" });
       setProjects([data, ...projects]);
       setNewProjectName("");
       setNewProjectDescription("");
@@ -137,7 +143,7 @@ export default function Projects() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!confirm("Är du säker på att du vill ta bort projektet?")) return;
+    if (!confirm(isZh ? "确认彻底删除该改善项目吗？删除后所有阶段记录均不可恢复。" : "Are you sure you want to delete this project? All phase data will be permanently removed.")) return;
 
     const { error } = await supabase
       .from("projects")
@@ -145,9 +151,12 @@ export default function Projects() {
       .eq("id", projectId);
 
     if (error) {
-      toast({ title: "Kunde inte ta bort projekt", variant: "destructive" });
+      toast({ 
+        title: isZh ? "删除项目失败" : "Failed to delete project", 
+        variant: "destructive" 
+      });
     } else {
-      toast({ title: "Projekt borttaget" });
+      toast({ title: isZh ? "项目已成功删除" : "Project deleted" });
       setProjects(projects.filter((p) => p.id !== projectId));
     }
   };

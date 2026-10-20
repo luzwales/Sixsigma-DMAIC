@@ -45,28 +45,38 @@ interface VsmProcessStep {
   inventoryQuantity: number; // Inventory units waiting after this step
 }
 
-const TEMPLATES = {
+const getTemplates = (isZh: boolean) => ({
   manufacturing: {
     customerDemand: 120, // units per day
     shiftHours: 8,       // hours per shift
-    steps: [
-      { id: "1", name: "Stansning", cycleTime: 45, changeoverTime: 15, uptime: 95, operators: 1, inventoryQuantity: 80 },
-      { id: "2", name: "Svetsning", cycleTime: 120, changeoverTime: 5, uptime: 88, operators: 2, inventoryQuantity: 220 },
-      { id: "3", name: "Montering", cycleTime: 180, changeoverTime: 0, uptime: 98, operators: 4, inventoryQuantity: 50 },
-      { id: "4", name: "Kontroll & Paketering", cycleTime: 60, changeoverTime: 2, uptime: 99, operators: 1, inventoryQuantity: 10 }
+    steps: isZh ? [
+      { id: "1", name: "冲压冲孔 (Stamping)", cycleTime: 45, changeoverTime: 15, uptime: 95, operators: 1, inventoryQuantity: 80 },
+      { id: "2", name: "机器人焊接 (Welding)", cycleTime: 120, changeoverTime: 5, uptime: 88, operators: 2, inventoryQuantity: 220 },
+      { id: "3", name: "总装装配 (Assembly)", cycleTime: 180, changeoverTime: 0, uptime: 98, operators: 4, inventoryQuantity: 50 },
+      { id: "4", name: "终检与包装 (QC & Packing)", cycleTime: 60, changeoverTime: 2, uptime: 99, operators: 1, inventoryQuantity: 10 }
+    ] : [
+      { id: "1", name: "Punching / Stamping", cycleTime: 45, changeoverTime: 15, uptime: 95, operators: 1, inventoryQuantity: 80 },
+      { id: "2", name: "Welding", cycleTime: 120, changeoverTime: 5, uptime: 88, operators: 2, inventoryQuantity: 220 },
+      { id: "3", name: "Assembly", cycleTime: 180, changeoverTime: 0, uptime: 98, operators: 4, inventoryQuantity: 50 },
+      { id: "4", name: "Inspection & Packing", cycleTime: 60, changeoverTime: 2, uptime: 99, operators: 1, inventoryQuantity: 10 }
     ]
   },
   administrative: {
     customerDemand: 40,   // applications processed per day
     shiftHours: 7.5,      // working hours per day
-    steps: [
-      { id: "1", name: "Registrering", cycleTime: 300, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 15 },
-      { id: "2", name: "Granskning", cycleTime: 900, changeoverTime: 0, uptime: 95, operators: 2, inventoryQuantity: 35 },
-      { id: "3", name: "Beslutsfattande", cycleTime: 600, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 10 },
-      { id: "4", name: "Utskick", cycleTime: 120, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 2 }
+    steps: isZh ? [
+      { id: "1", name: "登记受理 (Intake)", cycleTime: 300, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 15 },
+      { id: "2", name: "合规初审 (Review)", cycleTime: 900, changeoverTime: 0, uptime: 95, operators: 2, inventoryQuantity: 35 },
+      { id: "3", name: "主管审批 (Approval)", cycleTime: 600, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 10 },
+      { id: "4", name: "结果出具 (Dispatch)", cycleTime: 120, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 2 }
+    ] : [
+      { id: "1", name: "Registration", cycleTime: 300, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 15 },
+      { id: "2", name: "Application Review", cycleTime: 900, changeoverTime: 0, uptime: 95, operators: 2, inventoryQuantity: 35 },
+      { id: "3", name: "Approval Decision", cycleTime: 600, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 10 },
+      { id: "4", name: "Dispatch & Notice", cycleTime: 120, changeoverTime: 0, uptime: 100, operators: 1, inventoryQuantity: 2 }
     ]
   }
-};
+});
 
 export default function VSM() {
   const { locale, t } = useLanguage();
@@ -74,7 +84,7 @@ export default function VSM() {
 
   const [customerDemand, setCustomerDemand] = useState<string>("120");
   const [shiftHours, setShiftHours] = useState<string>("8");
-  const [steps, setSteps] = useState<VsmProcessStep[]>(TEMPLATES.manufacturing.steps);
+  const [steps, setSteps] = useState<VsmProcessStep[]>(() => getTemplates(locale === "zh").manufacturing.steps);
   const [showHelp, setShowHelp] = useState(false);
 
   // New step creation state
@@ -96,7 +106,8 @@ export default function VSM() {
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave("vsm-mapping", handleLoad);
 
   const loadTemplate = (type: "manufacturing" | "administrative") => {
-    const template = TEMPLATES[type];
+    const templates = getTemplates(isZh);
+    const template = templates[type];
     setCustomerDemand(String(template.customerDemand));
     setShiftHours(String(template.shiftHours));
     setSteps(template.steps);
@@ -190,7 +201,7 @@ export default function VSM() {
   const handleSave = () => {
     saveCalculation({
       toolId: "vsm-mapping",
-      toolName: "Värdeflödesanalys (VSM)",
+      toolName: isZh ? "价值流图分析 (VSM)" : "Value Stream Mapping (VSM)",
       phase: 2,
       inputs: { customerDemand, shiftHours, steps },
       results: {
