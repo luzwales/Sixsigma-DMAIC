@@ -188,6 +188,78 @@ function formatCalcValue(val: unknown, key?: string, isZh = false): string {
   return String(val);
 }
 
+function localizeNoteTitle(title: string, isZh: boolean): string {
+  if (!title) return title;
+  const t = title.trim();
+  if (t === "Problemformulering & Mål" || t.toLowerCase().includes("problemformulering") || t === "问题陈述与改善目标" || t === "Problem Statement & Objective") {
+    return isZh ? "问题陈述与改善目标" : "Problem Statement & Objective";
+  }
+  if (t === "Datainsamlingsplan kommentarer" || t.toLowerCase().includes("datainsamlingsplan") || t === "数据收集计划与 MSA 评审纪要" || t === "Data Collection Plan & MSA Review") {
+    return isZh ? "数据收集计划与 MSA 评审纪要" : "Data Collection Plan & MSA Review";
+  }
+  if (t === "Ishikawa analys slutsatser" || t.toLowerCase().includes("ishikawa") || t === "石川因果鱼骨图分析结论" || t === "Ishikawa Fishbone Root Cause Findings") {
+    return isZh ? "石川因果鱼骨图分析结论" : "Ishikawa Fishbone Root Cause Findings";
+  }
+  return title;
+}
+
+function localizeNoteContent(content: string | null, isZh: boolean): string | null {
+  if (!content) return content;
+  if (content.includes("Reducera monteringsvariabiliteten") || content.includes("攻坚方向：将装配工位周期时间波动") || content.includes("Reduce assembly cycle time variability")) {
+    return isZh
+      ? "攻坚方向：将装配工位周期时间波动由目前的 45 分钟收窄至 30 分钟以内。\n项目目标：消除加班浪费与偶发缺陷，年化达成预期财务收益 450,000 元。"
+      : "Purpose: Reduce assembly cycle time variability from 45 minutes to under 30 minutes per unit.\nGoal: Realize annual financial savings of $450,000 by cutting overtime and scrap defects.";
+  }
+  if (content.includes("baseline-data under 2 veckor") || content.includes("已连续采集两周基线测量数据") || content.includes("Collected 2 weeks of baseline data")) {
+    return isZh
+      ? "已连续采集两周基线测量数据 (N=50)。测量系统分析 Gage R&R 实测值为 8.4%，低于 10% 黄金判据，量具精度完全合格。"
+      : "Collected 2 weeks of baseline data (N=50). Measurement System Analysis (MSA) confirmed Gage R&R at 8.4%, fully acceptable (<10%).";
+  }
+  if (content.includes("Huvudorsaker till variansen") || content.includes("核心变异根因梳理：") || content.includes("Primary sources of variance:")) {
+    return isZh
+      ? "核心变异根因梳理：\n1. 换模换型与工具夹具缺少标准化定位。\n2. 固化炉温场存在局部温度波动。\n3. 各班次操作工走线装配手法未彻底对齐。\n\n改善期重点攻坚固化炉温场控制与走线工装防错改造。"
+      : "Primary sources of variance:\n1. Lack of standardized changeover tool locating.\n2. Curing oven temperature gradients.\n3. Technique variance between shifts.\n\nNext step: verify oven thermal stability during the Improve phase.";
+  }
+  return content;
+}
+
+function localizeProjectName(name: string, isZh: boolean): string {
+  if (!name) return name;
+  if (name.includes("Optimering av monteringstid") || name.includes("装配 3 线工时与过程变异优化") || name.includes("Assembly Line 3 Cycle Time")) {
+    return isZh ? "装配 3 线工时与过程变异优化" : "Assembly Line 3 Cycle Time & Variation Optimization";
+  }
+  return name;
+}
+
+function localizeProjectDesc(desc: string | null, isZh: boolean): string | null {
+  if (!desc) return desc;
+  if (desc.includes("Sex Sigma-projekt för att reducera cykeltid") || desc.includes("精益六西格玛黑带改善项目") || desc.includes("Six Sigma DMAIC project to reduce cycle time")) {
+    return isZh
+      ? "精益六西格玛黑带改善项目：大幅降低装配 3 线周期时间波动与返修浪费，建立防错装配标准工法。"
+      : "Six Sigma DMAIC project to reduce cycle time variability and defect rates across Assembly Line 3.";
+  }
+  return desc;
+}
+
+function localizeToolName(name: string, isZh: boolean): string {
+  if (!name) return name;
+  const lower = name.toLowerCase();
+  if (lower.includes("charter")) return isZh ? "项目章程 (Project Charter)" : "Project Charter";
+  if (lower.includes("voc") || lower.includes("voice of customer")) return isZh ? "客户之声 (Voice of Customer)" : "Voice of Customer";
+  if (lower.includes("sipoc")) return isZh ? "高阶流程图 (SIPOC)" : "SIPOC";
+  if (lower.includes("datainsamling") || lower.includes("data collection")) return isZh ? "数据收集计划 (Data Collection Plan)" : "Data Collection Plan";
+  if (lower.includes("gage r&r") || lower.includes("gage-rr")) return isZh ? "测量系统分析 (Gage R&R)" : "Measurement System Analysis (Gage R&R)";
+  if (lower.includes("processduglighet (cpk)") || lower.includes("capability (cpk)")) return isZh ? "过程能力指数 (Cpk)" : "Process Capability (Cpk)";
+  if (lower.includes("processduglighet (cp)") || lower.includes("capability (cp)")) return isZh ? "过程能力指数 (Cp)" : "Process Capability (Cp)";
+  if (lower.includes("fiskben") || lower.includes("fishbone") || lower.includes("ishikawa")) return isZh ? "因果鱼骨图 (Fishbone)" : "Fishbone Diagram";
+  if (lower.includes("fmea")) return isZh ? "失效模式与影响分析 (FMEA)" : "Failure Mode and Effects Analysis (FMEA)";
+  if (lower.includes("pugh")) return isZh ? "普格方案决策矩阵 (Pugh Matrix)" : "Pugh Matrix";
+  if (lower.includes("pilot")) return isZh ? "试点运行验证 (Pilot Study)" : "Pilot Study";
+  if (lower.includes("sop")) return isZh ? "标准作业程序 (SOP)" : "Standard Operating Procedure (SOP)";
+  if (lower.includes("vsm") || lower.includes("värdeflöde")) return isZh ? "价值流图 (VSM)" : "Value Stream Mapping (VSM)";
+  return name;
+}
+
 function getCalculationPhase(calc: { phase: number | null | undefined; tool_id: string }): number {
   if (calc.phase && calc.phase >= 1 && calc.phase <= 5) {
     return Number(calc.phase);
@@ -565,7 +637,7 @@ export default function ProjectDetail() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-bold break-words leading-tight">{project.name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold break-words leading-tight">{localizeProjectName(project.name, isZh)}</h1>
                 {project.user_id === user?.id && (
                   <Button
                     variant="outline"
@@ -579,7 +651,7 @@ export default function ProjectDetail() {
                 )}
               </div>
               {project.description && (
-                <p className="text-white/80 text-sm sm:text-base line-clamp-3 md:line-clamp-none max-w-2xl">{project.description}</p>
+                <p className="text-white/80 text-sm sm:text-base line-clamp-3 md:line-clamp-none max-w-2xl">{localizeProjectDesc(project.description, isZh)}</p>
               )}
               {/* Savings indicators */}
               <div className="flex items-center gap-4 mt-2">
@@ -947,7 +1019,7 @@ export default function ProjectDetail() {
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
                             <div>
-                              <CardTitle className="text-lg">{note.title}</CardTitle>
+                              <CardTitle className="text-lg">{localizeNoteTitle(note.title, isZh)}</CardTitle>
                               <CardDescription>
                                 {parseSafeDate(note.created_at).toLocaleDateString(isZh ? "zh-CN" : "sv-SE")}
                               </CardDescription>
@@ -964,7 +1036,7 @@ export default function ProjectDetail() {
                         </CardHeader>
                         {note.content && (
                           <CardContent>
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{note.content}</p>
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{localizeNoteContent(note.content, isZh)}</p>
                           </CardContent>
                         )}
                       </Card>
@@ -1009,7 +1081,7 @@ export default function ProjectDetail() {
                         <CardHeader className="pb-2 pt-3 px-3">
                           <div className="flex items-start justify-between">
                             <div>
-                              <CardTitle className="text-xs font-bold leading-tight text-slate-900 dark:text-slate-100">{calc.tool_name}</CardTitle>
+                              <CardTitle className="text-xs font-bold leading-tight text-slate-900 dark:text-slate-100">{localizeToolName(calc.tool_name, isZh)}</CardTitle>
                               <CardDescription className="text-[9px] font-mono mt-0.5 text-slate-500 dark:text-slate-400">
                                 {parseSafeDate(calc.created_at).toLocaleDateString(isZh ? "zh-CN" : "sv-SE")}
                               </CardDescription>

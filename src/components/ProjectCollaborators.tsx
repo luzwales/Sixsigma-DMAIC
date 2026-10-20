@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserPlus, Trash2, Loader2, Crown } from "lucide-react";
 
@@ -40,6 +41,9 @@ export function ProjectCollaborators({
   isOwner,
   currentUserId,
 }: ProjectCollaboratorsProps) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -70,14 +74,14 @@ export function ProjectCollaborators({
 
   const inviteCollaborator = async () => {
     if (!email.trim()) {
-      toast({ title: "Ange en e-postadress", variant: "destructive" });
+      toast({ title: isZh ? "请输入电子邮箱" : "Please enter an email address", variant: "destructive" });
       return;
     }
 
     // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      toast({ title: "Ogiltig e-postadress", variant: "destructive" });
+      toast({ title: isZh ? "邮箱格式不正确" : "Invalid email address", variant: "destructive" });
       return;
     }
 
@@ -88,7 +92,7 @@ export function ProjectCollaborators({
       (c) => c.user_email && c.user_email.toLowerCase() === email.trim().toLowerCase()
     );
     if (existingCollaborator) {
-      toast({ title: "Användaren är redan inbjuden", variant: "destructive" });
+      toast({ title: isZh ? "该用户已在团队协作成员列表中" : "User is already invited", variant: "destructive" });
       setIsInviting(false);
       return;
     }
@@ -107,7 +111,7 @@ export function ProjectCollaborators({
 
       if (error) {
         console.error("Edge function error:", error);
-        toast({ title: "Kunde inte bjuda in användare", variant: "destructive" });
+        toast({ title: isZh ? "邀请成员失败" : "Failed to invite user", variant: "destructive" });
         return;
       }
 
@@ -115,14 +119,14 @@ export function ProjectCollaborators({
         // Handle specific error messages from the edge function
         if (data.error.includes("not found")) {
           toast({ 
-            title: "Användaren hittades inte", 
-            description: "Användaren måste registrera sig först innan de kan bjudas in.",
+            title: isZh ? "未找到该用户账户" : "User not found", 
+            description: isZh ? "被邀请人须先在本系统注册账号方可加入团队。" : "The user must register an account first before being invited.",
             variant: "destructive" 
           });
         } else if (data.error.includes("already a collaborator")) {
-          toast({ title: "Användaren är redan inbjuden", variant: "destructive" });
+          toast({ title: isZh ? "该用户已是项目协作者" : "User is already a collaborator", variant: "destructive" });
         } else if (data.error.includes("yourself")) {
-          toast({ title: "Du kan inte bjuda in dig själv", variant: "destructive" });
+          toast({ title: isZh ? "不能邀请自己为协作者" : "You cannot invite yourself", variant: "destructive" });
         } else {
           toast({ title: data.error, variant: "destructive" });
         }
@@ -130,7 +134,7 @@ export function ProjectCollaborators({
       }
 
       if (data?.success && data?.collaborator) {
-        toast({ title: `${email} har bjudits in som ${role === "editor" ? "redigerare" : "läsare"}` });
+        toast({ title: isZh ? `已成功邀请 ${email}（权限：${role === "editor" ? "编辑者" : "仅查看"}）` : `${email} invited as ${role === "editor" ? "Editor" : "Viewer"}` });
         setCollaborators([...collaborators, data.collaborator]);
         setEmail("");
         setRole("editor");
@@ -139,12 +143,12 @@ export function ProjectCollaborators({
     } catch (err) {
       console.error("Invitation error:", err);
       setIsInviting(false);
-      toast({ title: "Ett oväntat fel inträffade", variant: "destructive" });
+      toast({ title: isZh ? "发生意外网络错误" : "An unexpected error occurred", variant: "destructive" });
     }
   };
 
   const removeCollaborator = async (collaboratorId: string, collaboratorEmail: string | null) => {
-    if (!confirm(`Ta bort ${collaboratorEmail || 'denna samarbetspartner'} från projektet?`)) return;
+    if (!confirm(isZh ? `确认从本项目中移除协作者 ${collaboratorEmail || '该成员'} 吗？` : `Remove ${collaboratorEmail || 'this collaborator'} from the project?`)) return;
 
     const { error } = await supabase
       .from("project_collaborators")
@@ -153,9 +157,9 @@ export function ProjectCollaborators({
 
     if (!error) {
       setCollaborators(collaborators.filter((c) => c.id !== collaboratorId));
-      toast({ title: "Samarbetspartner borttagen" });
+      toast({ title: isZh ? "成员已成功移除" : "Collaborator removed" });
     } else {
-      toast({ title: "Kunde inte ta bort samarbetspartner", variant: "destructive" });
+      toast({ title: isZh ? "移除成员失败" : "Failed to remove collaborator", variant: "destructive" });
     }
   };
 
@@ -171,7 +175,9 @@ export function ProjectCollaborators({
           c.id === collaboratorId ? { ...c, role: newRole } : c
         )
       );
-      toast({ title: "Roll uppdaterad" });
+      toast({ title: isZh ? "成员权限已更新" : "Role updated" });
+    } else {
+      toast({ title: isZh ? "更新权限失败" : "Failed to update role", variant: "destructive" });
     }
   };
 
@@ -179,7 +185,7 @@ export function ProjectCollaborators({
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Laddar...</span>
+        <span className="text-sm">{isZh ? "加载中..." : "Loading..."}</span>
       </div>
     );
   }
@@ -191,7 +197,7 @@ export function ProjectCollaborators({
         <div className="flex items-center gap-1">
           <Users className="h-4 w-4 text-white/80" />
           <span className="text-sm text-white/80">
-            {collaborators.length} samarbetspartner{collaborators.length !== 1 ? "s" : ""}
+            {collaborators.length} {isZh ? "位协作者" : (collaborators.length !== 1 ? "collaborators" : "collaborator")}
           </span>
         </div>
       )}
@@ -205,14 +211,14 @@ export function ProjectCollaborators({
             className="bg-white/20 border-white/40 text-white hover:bg-white/30"
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            {isOwner ? "Dela" : "Visa team"}
+            {isOwner ? (isZh ? "共享协作" : "Share") : (isZh ? "查看团队" : "View Team")}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Projektteam
+              {isZh ? "项目跨职能团队" : "Project Team"}
             </DialogTitle>
           </DialogHeader>
 
@@ -220,11 +226,11 @@ export function ProjectCollaborators({
             {/* Invite form - only for owners */}
             {isOwner && (
               <div className="space-y-3 pb-4 border-b">
-                <Label>Bjud in ny samarbetspartner</Label>
+                <Label>{isZh ? "邀请新团队成员" : "Invite Collaborator"}</Label>
                 <div className="flex gap-2">
                   <Input
                     type="email"
-                    placeholder="E-postadress"
+                    placeholder={isZh ? "输入成员电子邮箱" : "Email address"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="flex-1"
@@ -234,8 +240,8 @@ export function ProjectCollaborators({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="editor">Redigerare</SelectItem>
-                      <SelectItem value="viewer">Läsare</SelectItem>
+                      <SelectItem value="editor">{isZh ? "编辑者" : "Editor"}</SelectItem>
+                      <SelectItem value="viewer">{isZh ? "仅查看" : "Viewer"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -249,28 +255,28 @@ export function ProjectCollaborators({
                   ) : (
                     <UserPlus className="h-4 w-4 mr-2" />
                   )}
-                  Bjud in
+                  {isZh ? "发送邀请" : "Invite"}
                 </Button>
               </div>
             )}
 
             {/* Team list */}
             <div className="space-y-2">
-              <Label>Teammedlemmar</Label>
+              <Label>{isZh ? "团队现有成员" : "Team Members"}</Label>
 
               {/* Owner indicator */}
               <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
                   <Crown className="h-4 w-4 text-yellow-500" />
-                  <span className="font-medium">Du (Ägare)</span>
+                  <span className="font-medium">{isZh ? "您 (项目负责人/Owner)" : "You (Owner)"}</span>
                 </div>
-                <Badge>Ägare</Badge>
+                <Badge>{isZh ? "负责人" : "Owner"}</Badge>
               </div>
 
               {/* Collaborators */}
               {collaborators.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Inga samarbetspartners ännu
+                  {isZh ? "暂无其他协作者" : "No other collaborators yet"}
                 </p>
               ) : (
                 collaborators.map((collab) => (
@@ -280,10 +286,10 @@ export function ProjectCollaborators({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {collab.user_email || "Samarbetspartner"}
+                        {collab.user_email || (isZh ? "协作者" : "Collaborator")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Tillagd {new Date(collab.created_at).toLocaleDateString("sv-SE")}
+                        {isZh ? "加入时间:" : "Added"} {new Date(collab.created_at).toLocaleDateString(isZh ? "zh-CN" : "sv-SE")}
                       </p>
                     </div>
 
@@ -298,8 +304,8 @@ export function ProjectCollaborators({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="editor">Redigerare</SelectItem>
-                              <SelectItem value="viewer">Läsare</SelectItem>
+                              <SelectItem value="editor">{isZh ? "编辑者" : "Editor"}</SelectItem>
+                              <SelectItem value="viewer">{isZh ? "仅查看" : "Viewer"}</SelectItem>
                             </SelectContent>
                           </Select>
                           <Button
@@ -313,7 +319,7 @@ export function ProjectCollaborators({
                         </>
                       ) : (
                         <Badge variant="secondary">
-                          {collab.role === "editor" ? "Redigerare" : "Läsare"}
+                          {collab.role === "editor" ? (isZh ? "编辑者" : "Editor") : (isZh ? "仅查看" : "Viewer")}
                         </Badge>
                       )}
                     </div>

@@ -44,7 +44,7 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast({ title: "Fyll i alla fält", variant: "destructive" });
+      toast({ title: isZh ? "请填写所有必填字段" : "Please fill in all fields", variant: "destructive" });
       return;
     }
     
@@ -54,22 +54,22 @@ export default function Auth() {
 
     if (error) {
       console.error("Sign in failed:", error);
-      let message = "Inloggning misslyckades";
-      let description = error.message || "Ett okänt fel uppstod.";
+      let message = isZh ? "登录失败" : "Sign in failed";
+      let description = error.message || (isZh ? "发生未知错误。" : "An unknown error occurred.");
       
       const errMsg = error.message || "";
       const errCode = (error as any).code || "";
       
       if (errCode === "auth/invalid-credential" || errCode === "auth/user-not-found" || errCode === "auth/wrong-password" || errMsg.includes("invalid-credential")) {
-        message = "Fel e-post eller lösenord";
-        description = "Kontrollera att du har angett rätt uppgifter eller registrera ett nytt konto.";
+        message = isZh ? "邮箱或密码错误" : "Invalid email or password";
+        description = isZh ? "请确认输入信息无误，或切换至注册标签创建新账号。" : "Please check your credentials or create a new account.";
       } else if (errCode === "auth/operation-not-allowed" || errMsg.includes("operation-not-allowed")) {
-        message = "Metoden är inte aktiverad";
-        description = "Inloggning med e-post och lösenord är inte aktiverat i din Firebase Console. Gå till Authentication -> Sign-in method och aktivera 'Email/Password'.";
+        message = isZh ? "未启用登录方式" : "Method not enabled";
+        description = isZh ? "请在 Firebase Console 的 Authentication -> Sign-in method 中启用 Email/Password。" : "Email/Password sign-in is disabled in your Firebase console.";
         setShowHelp(true);
       } else if (errCode === "auth/unauthorized-domain" || errMsg.includes("unauthorized-domain")) {
-        message = "Obehörig domän";
-        description = `Denna domän (${window.location.hostname}) är inte godkänd i din Firebase Console under Authorized Domains.`;
+        message = isZh ? "未授权域名" : "Unauthorized domain";
+        description = isZh ? `当前域名 (${window.location.hostname}) 尚未添加到 Firebase 授权域名列表中。` : `Domain (${window.location.hostname}) is not authorized in Firebase Console.`;
         setShowHelp(true);
       }
       
@@ -79,7 +79,7 @@ export default function Auth() {
         variant: "destructive" 
       });
     } else {
-      toast({ title: "Inloggad!" });
+      toast({ title: isZh ? "登录成功！" : "Signed in successfully!" });
       navigate("/projects");
     }
   };
@@ -87,11 +87,11 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast({ title: "Fyll i alla fält", variant: "destructive" });
+      toast({ title: isZh ? "请填写所有必填字段" : "Please fill in all fields", variant: "destructive" });
       return;
     }
     if (password.length < 6) {
-      toast({ title: "Lösenordet måste vara minst 6 tecken", variant: "destructive" });
+      toast({ title: isZh ? "密码长度至少需要 6 位字符" : "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
 
@@ -101,22 +101,22 @@ export default function Auth() {
 
     if (error) {
       console.error("Sign up failed:", error);
-      let message = "Registrering misslyckades";
-      let description = error.message || "Ett okänt fel uppstod.";
+      let message = isZh ? "注册失败" : "Sign up failed";
+      let description = error.message || (isZh ? "发生未知错误。" : "An unknown error occurred.");
       
       const errMsg = error.message || "";
       const errCode = (error as any).code || "";
       
       if (errCode === "auth/email-already-in-use" || errMsg.includes("already-in-use") || errMsg.includes("already registered")) {
-        message = "E-postadressen används redan";
-        description = "Det finns redan ett konto registrerat med denna e-postadress. Prova att logga in istället.";
+        message = isZh ? "该邮箱已被注册" : "Email already registered";
+        description = isZh ? "该电子邮箱已被占用，请直接登录。" : "An account already exists with this email address. Please sign in.";
       } else if (errCode === "auth/operation-not-allowed" || errMsg.includes("operation-not-allowed")) {
-        message = "Registrering blockerad";
-        description = "E-post och lösenord är inte aktiverat som inloggningsmetod under Authentication -> Sign-in method i din Firebase Console.";
+        message = isZh ? "注册功能受限" : "Registration restricted";
+        description = isZh ? "请在 Firebase 控制台中开启 Email/Password 认证方式。" : "Email/Password is not enabled in Firebase Console.";
         setShowHelp(true);
       } else if (errCode === "auth/weak-password" || errMsg.includes("weak-password")) {
-        message = "För svagt lösenord";
-        description = "Välj ett lösenord som är minst 6 tecken långt.";
+        message = isZh ? "密码强度不足" : "Weak password";
+        description = isZh ? "请设置至少 6 位长度的密码。" : "Please choose a password with at least 6 characters.";
       }
       
       toast({ 
@@ -126,10 +126,9 @@ export default function Auth() {
       });
     } else {
       toast({ 
-        title: "Konto skapat!", 
-        description: "Ditt konto har skapats och du är nu registrerad." 
+        title: isZh ? "账号创建成功！" : "Account created!", 
+        description: isZh ? "您已成功注册并登录。" : "Your account has been created." 
       });
-      // The Firebase createUserWithEmailAndPassword SDK auto-signs the user in, so navigate() will trigger via useEffect.
     }
   };
 
@@ -144,22 +143,22 @@ export default function Auth() {
     setIsLoading(false);
     if (error) {
       console.error("Google Auth error:", error);
-      let errorDesc = error.message || "Ett okänt fel uppstod.";
+      let errorDesc = error.message || (isZh ? "发生未知错误。" : "An unknown error occurred.");
       if (error.code === "auth/unauthorized-domain" || error.message?.includes("auth/unauthorized-domain") || error.message?.includes("unauthorized-domain")) {
-        errorDesc = `Domänen "${window.location.hostname}" är inte tillagd i din Firebase-konsol under godkända domäner.`;
+        errorDesc = isZh ? `域名 "${window.location.hostname}" 尚未添加到 Firebase 授权域名列表中。` : `Domain "${window.location.hostname}" is not authorized in Firebase.`;
         setShowHelp(true);
       } else if (error.code === "auth/popup-closed-by-user" || error.message?.includes("popup-closed-by-user") || error.message?.includes("closed by user")) {
-        errorDesc = "Inloggningsfönstret stängdes innan inloggningen slutfördes.";
+        errorDesc = isZh ? "登录弹窗在认证完成前被关闭。" : "The sign-in popup was closed before completion.";
       } else if (error.code === "auth/operation-not-allowed" || error.message?.includes("operation-not-allowed")) {
-        errorDesc = "Google-inloggning är inte aktiverat som inloggningsmetod i ditt Firebase-projekt.";
+        errorDesc = isZh ? "Firebase 项目尚未开启 Google 登录提供商。" : "Google sign-in is not enabled in your Firebase project.";
         setShowHelp(true);
       } else if (error.message?.includes("third-party cookies") || error.message?.includes("cookie")) {
-        errorDesc = "Din webbläsare blockerar kakor (cookies) från tredje part i förhandsvisningen. Prova att klicka på 'Öppna i ny flik'.";
+        errorDesc = isZh ? "浏览器阻止了第三方 Cookie，建议在新标签页中打开。" : "Browser blocked 3rd-party cookies. Try opening in a new tab.";
         setShowHelp(true);
       }
       
       toast({ 
-        title: "Google-inloggning misslyckades", 
+        title: isZh ? "Google 登录未成功" : "Google sign-in failed", 
         description: errorDesc, 
         variant: "destructive" 
       });
@@ -172,8 +171,8 @@ export default function Auth() {
     
     const user = {
       id: "local-sandbox-user",
-      email: "demo@sixsigma.local",
-      user_metadata: { display_name: "Demo Användare" }
+      email: "engineer@sixsigma.local",
+      user_metadata: { display_name: isZh ? "黑带工程师 (演示账号)" : "Demo Engineer" }
     };
     const session = {
       access_token: "mock-token-local",
@@ -182,8 +181,8 @@ export default function Auth() {
     localStorage.setItem("dmaic_mock_session", JSON.stringify(session));
     
     toast({ 
-      title: "Välkommen!", 
-      description: "Du kör nu i lokalt demoläge. Dina projekt sparas direkt i din webbläsare." 
+      title: isZh ? "欢迎进入离线沙箱演示模式！" : "Welcome!", 
+      description: isZh ? "所有项目数据将安全保存在您的本地浏览器中，无需配置远程云端。" : "Running in local demo mode. Data is stored directly in your browser." 
     });
     
     setTimeout(() => {
@@ -200,34 +199,34 @@ export default function Auth() {
             <Card>
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold">
-                  {isZh ? "欢迎使用六西格玛工具箱" : "Välkommen"}
+                  {isZh ? "欢迎使用六西格玛工具箱" : "Welcome to DMAIC Suite"}
                 </CardTitle>
                 <CardDescription>
-                  {isZh ? "登录以同步并保存您的 DMAIC 改善项目、分析日志与计算器数据" : "Logga in för att spara dina projekt och analyser"}
+                  {isZh ? "登录以同步并保存您的 DMAIC 改善项目、分析日志与计算器数据" : "Sign in to sync your DMAIC projects, logs, and calculator data"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="signin">
                   <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="signin">{isZh ? "账号登录" : "Logga in"}</TabsTrigger>
-                    <TabsTrigger value="signup">{isZh ? "免费注册" : "Registrera"}</TabsTrigger>
+                    <TabsTrigger value="signin">{isZh ? "账号登录" : "Sign In"}</TabsTrigger>
+                    <TabsTrigger value="signup">{isZh ? "免费注册" : "Register"}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="signin">
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signin-email">{isZh ? "工作电子邮箱 (Email)" : "E-post"}</Label>
+                        <Label htmlFor="signin-email">{isZh ? "工作电子邮箱 (Email)" : "Email"}</Label>
                         <Input
                           id="signin-email"
                           type="email"
-                          placeholder={isZh ? "your-name@company.com" : "din@email.se"}
+                          placeholder={isZh ? "your-name@company.com" : "engineer@company.com"}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signin-password">{isZh ? "登录密码" : "Lösenord"}</Label>
+                        <Label htmlFor="signin-password">{isZh ? "登录密码" : "Password"}</Label>
                         <Input
                           id="signin-password"
                           type="password"
@@ -239,7 +238,7 @@ export default function Auth() {
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        {isZh ? "登录系统" : "Logga in"}
+                        {isZh ? "登录系统" : "Sign In"}
                       </Button>
                     </form>
                   </TabsContent>
@@ -247,32 +246,32 @@ export default function Auth() {
                   <TabsContent value="signup">
                     <form onSubmit={handleSignUp} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signup-name">{isZh ? "姓名 / 称谓 (可选)" : "Namn (valfritt)"}</Label>
+                        <Label htmlFor="signup-name">{isZh ? "姓名 / 称谓 (可选)" : "Full Name (Optional)"}</Label>
                         <Input
                           id="signup-name"
                           type="text"
-                          placeholder={isZh ? "例如：张工程师" : "Ditt namn"}
+                          placeholder={isZh ? "例如：张工程师" : "e.g. John Doe"}
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-email">{isZh ? "工作电子邮箱 (Email)" : "E-post"}</Label>
+                        <Label htmlFor="signup-email">{isZh ? "工作电子邮箱 (Email)" : "Email"}</Label>
                         <Input
                           id="signup-email"
                           type="email"
-                          placeholder={isZh ? "your-name@company.com" : "din@email.se"}
+                          placeholder={isZh ? "your-name@company.com" : "engineer@company.com"}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-password">{isZh ? "设置登录密码 (至少6位)" : "Lösenord"}</Label>
+                        <Label htmlFor="signup-password">{isZh ? "设置登录密码 (至少6位)" : "Password (Min 6 chars)"}</Label>
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder={isZh ? "不少于6位字符" : "Minst 6 tecken"}
+                          placeholder={isZh ? "不少于6位字符" : "At least 6 characters"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -280,7 +279,7 @@ export default function Auth() {
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        {isZh ? "创建并激活账号" : "Skapa konto"}
+                        {isZh ? "创建并激活账号" : "Create Account"}
                       </Button>
                     </form>
                   </TabsContent>
@@ -291,7 +290,7 @@ export default function Auth() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">{isZh ? "或者" : "eller"}</span>
+                    <span className="bg-card px-2 text-muted-foreground">{isZh ? "或者" : "or"}</span>
                   </div>
                 </div>
 
@@ -303,7 +302,7 @@ export default function Auth() {
                   disabled={isLoading}
                 >
                   <GoogleIcon />
-                  Fortsätt med Google
+                  {isZh ? "使用 Google 账号一键登录" : "Continue with Google"}
                 </Button>
 
                 <Button
@@ -312,7 +311,7 @@ export default function Auth() {
                   onClick={handleLocalSandboxMode}
                   disabled={isLoading}
                 >
-                  Starta i lokalt demoläge (Ingen inloggning krävs)
+                  {isZh ? "进入本地演示/沙箱模式 (无需登录)" : "Start in Local Demo Mode (No Login Required)"}
                 </Button>
 
                 <div className="mt-6 border-t pt-4">
@@ -323,7 +322,7 @@ export default function Auth() {
                   >
                     <span className="flex items-center gap-1.5">
                       <AlertCircle className="h-4 w-4 text-amber-500" />
-                      Problem med Google-inloggningen? Klicka för lösning!
+                      {isZh ? "遇到认证疑问？查看配置指引" : "Trouble signing in? Click for help"}
                     </span>
                     {showHelp ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </button>
@@ -331,40 +330,38 @@ export default function Auth() {
                   {showHelp && (
                     <div className="mt-3 space-y-3.5 text-xs text-muted-foreground bg-muted/60 p-4 rounded-lg border border-border/80">
                       <p className="leading-relaxed">
-                        Eftersom appen körs i AI Studio-miljön (i en iframe) kan vissa webbläsare blockera popup-fönster eller cookies som Google kräver för inloggningen.
+                        {isZh 
+                          ? "应用在沙箱或容器环境中运行时，部分浏览器可能会拦截第三方 Cookie 或认证弹窗。" 
+                          : "When running inside sandbox frames, certain browsers may block third-party cookies or popups."}
                       </p>
 
                       <div className="space-y-4">
                         <div className="flex gap-2">
                           <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</div>
                           <div>
-                            <strong className="text-foreground block mb-0.5">Öppna i en ny flik (Rekommenderas)</strong>
-                            Klicka på knappen <span className="font-semibold text-foreground">"Öppna i ny flik"</span> längst upp till höger i förhandsvisningen för att öppna appen direkt och logga in stabilt utan iframe-begränsningar.
+                            <strong className="text-foreground block mb-0.5">{isZh ? "本地演示模式 (推荐直接体验)" : "Local Demo Mode (Recommended)"}</strong>
+                            {isZh 
+                              ? "点击上方的「进入本地演示/沙箱模式」，即可立即体验项目管理、六西格玛计算器和数据分析等全部核心功能。" 
+                              : "Click 'Start in Local Demo Mode' above to explore all features instantly without cloud setup."}
                           </div>
                         </div>
 
                         <div className="flex gap-2">
                           <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</div>
                           <div>
-                            <strong className="text-foreground block mb-0.5">Aktivera Google i Firebase Console</strong>
-                            Öppna din <a href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/providers`} target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-0.5">Firebase Console &rarr;</a> under <span className="font-semibold text-foreground">Authentication &rarr; Sign-in method</span> och kontrollera att <span className="font-semibold text-foreground">Google</span>-inloggningen är aktiverad.
+                            <strong className="text-foreground block mb-0.5">{isZh ? "在独立新标签页中打开" : "Open in New Tab"}</strong>
+                            {isZh 
+                              ? "点击右上角「在新标签页打开」，避免 iframe 框架带来的 Cookie 策略限制。" 
+                              : "Open the app in an independent tab to bypass iframe security sandbox policies."}
                           </div>
                         </div>
 
                         <div className="flex gap-2">
                           <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</div>
                           <div>
-                            <strong className="text-foreground block mb-0.5">Lägg till din domän i Firebase</strong>
-                            Firebase blockerar inloggningsförsök från okända domäner. Gå till din Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains och lägg till följande domän:
+                            <strong className="text-foreground block mb-0.5">{isZh ? "添加授权域名至 Firebase" : "Add Authorized Domain in Firebase"}</strong>
+                            {isZh ? "如需启用真实远程云端认证，请在 Firebase 控制台添加此域名：" : "Add this domain to Firebase Console -> Authentication -> Settings -> Authorized Domains:"}
                             <code className="block bg-background/80 p-2 rounded border font-mono select-all text-amber-600 font-semibold mt-2 break-all">{window.location.hostname}</code>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2 text-amber-600 font-medium">
-                          <div className="h-5 w-5 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">4</div>
-                          <div>
-                            <strong className="text-foreground block mb-0.5">Alternativ: Registrera med E-post & lösenord</strong>
-                            Om du inte kan lägga till fler domäner i Firebase Console (t.ex. på grund av app-gränser), använd **E-post och lösenord** i fliken "Registrera" ovan! Det kräver **ingen domain-verifiering**. Se bara till att du har aktiverat <span className="font-semibold text-foreground">Email/Password</span> som inloggningsmetod i ditt Firebase-projekt (Authentication &rarr; Sign-in method).
                           </div>
                         </div>
                       </div>

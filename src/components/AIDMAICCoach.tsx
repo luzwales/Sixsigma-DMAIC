@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface AIDMAICCoachProps {
   projectId: string;
@@ -20,6 +21,9 @@ interface AIDMAICCoachProps {
 }
 
 export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
+  const { locale } = useLanguage();
+  const isZh = locale === "zh";
+
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
@@ -32,7 +36,7 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
     try {
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
-      if (!token) throw new Error("Inte inloggad");
+      if (!token) throw new Error(isZh ? "未登录账号" : "Not authenticated");
 
       // 1. Fetch relevant project metrics from our local client (Firestore synced)
       const { data: projectData } = await supabase
@@ -81,19 +85,19 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Okänt fel" }));
+        const err = await res.json().catch(() => ({ error: isZh ? "未知网络异常" : "Unknown error" }));
         throw new Error(err.error || `HTTP ${res.status}`);
       }
 
       const data = await res.json();
       if (!data.text) {
-        throw new Error("Tomt svar från AI Coachen.");
+        throw new Error(isZh ? "AI 导师未返回分析建议。" : "Empty response from AI Coach.");
       }
       setResponse(data.text);
     } catch (e) {
       toast({
-        title: "AI-coach fel",
-        description: e instanceof Error ? e.message : "Okänt fel",
+        title: isZh ? "AI 导师助手异常" : "AI Coach Error",
+        description: e instanceof Error ? e.message : (isZh ? "未知错误" : "Unknown error"),
         variant: "destructive",
       });
     } finally {
@@ -113,7 +117,7 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
         <Button
           size="lg"
           className="fixed bottom-6 right-6 z-50 shadow-2xl rounded-full h-14 w-14 p-0 bg-gradient-to-br from-primary to-primary/70 hover:scale-110 transition-transform"
-          aria-label="Öppna AI DMAIC-coach"
+          aria-label={isZh ? "打开 AI 六西格玛导师" : "Open AI DMAIC Coach"}
         >
           <Brain className="h-6 w-6" />
         </Button>
@@ -122,10 +126,12 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            AI DMAIC-coach
+            {isZh ? "AI 六西格玛黑带导师" : "AI DMAIC Coach"}
           </SheetTitle>
           <SheetDescription>
-            Coachande analys av <span className="font-medium">{projectName}</span> baserat på din faktiska projektdata.
+            {isZh 
+              ? <>针对当前项目 <span className="font-medium text-foreground">{projectName}</span> 的实测指标与交付物进行深度辅导诊断。</>
+              : <>Methodological coaching for <span className="font-medium">{projectName}</span> based on your real project metrics.</>}
           </SheetDescription>
         </SheetHeader>
 
@@ -137,13 +143,13 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
             variant="default"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Coacha mitt projekt nu
+            {isZh ? "立即对本项目进行黑带诊断" : "Coach My Project Now"}
           </Button>
         </div>
 
         <div className="flex gap-2">
           <Input
-            placeholder="Ställ en fråga... (t.ex. 'Är jag redo för Improve-fasen?')"
+            placeholder={isZh ? "咨询任何六西格玛问题...（例如：当前数据准备好进入改善期了吗？）" : "Ask a question... (e.g. 'Are we ready for Improve phase?')"}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
@@ -160,14 +166,14 @@ export function AIDMAICCoach({ projectId, projectName }: AIDMAICCoachProps) {
           {!response && !isLoading && (
             <div className="text-center text-muted-foreground text-sm py-8">
               <Brain className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p>Klicka "Coacha mitt projekt nu" för att få en personlig analys,</p>
-              <p>eller ställ en specifik fråga.</p>
+              <p>{isZh ? "点击上方「立即对本项目进行黑带诊断」获取个性化指导建议，" : "Click 'Coach My Project Now' for personalized feedback,"}</p>
+              <p>{isZh ? "或在下方输入框中提出具体攻坚疑问。" : "or ask a specific methodology question below."}</p>
             </div>
           )}
           {isLoading && !response && (
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Analyserar projektdata...
+              {isZh ? "AI 黑带导师正在深度推演项目数据..." : "Analyzing project data..."}
             </div>
           )}
           {response && (

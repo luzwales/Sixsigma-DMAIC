@@ -165,6 +165,24 @@ export default function Projects() {
     return phases.find((p) => p.id === phaseNumber) || phases[0];
   };
 
+  const localizeProjectName = (name: string) => {
+    if (!name) return name;
+    if (name.includes("Optimering av monteringstid") || name.includes("装配 3 线工时与过程变异优化") || name.includes("Assembly Line 3 Cycle Time")) {
+      return isZh ? "装配 3 线工时与过程变异优化" : "Assembly Line 3 Cycle Time & Variation Optimization";
+    }
+    return name;
+  };
+
+  const localizeProjectDesc = (desc: string | null) => {
+    if (!desc) return desc;
+    if (desc.includes("Sex Sigma-projekt för att reducera cykeltid") || desc.includes("精益六西格玛黑带改善项目") || desc.includes("Six Sigma DMAIC project to reduce cycle time")) {
+      return isZh
+        ? "精益六西格玛黑带改善项目：大幅降低装配 3 线周期时间波动与返修浪费，建立防错装配标准工法。"
+        : "Six Sigma DMAIC project to reduce cycle time variability and defect rates across Assembly Line 3.";
+    }
+    return desc;
+  };
+
   if (loading || isLoading) {
     return (
       <Layout>
@@ -262,11 +280,11 @@ export default function Projects() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-1">
-                                <CardTitle className="text-xl">{project.name}</CardTitle>
+                                <CardTitle className="text-xl">{localizeProjectName(project.name)}</CardTitle>
                                 {project.user_id !== user?.id && (
                                   <Badge variant="outline" className="gap-1">
                                     <Users className="h-3 w-3" />
-                                    {isZh ? "团队共享" : "Delad"}
+                                    {isZh ? "团队共享" : "Shared"}
                                   </Badge>
                                 )}
                                 <Badge variant={project.status === "completed" ? "default" : "secondary"}>
@@ -278,7 +296,7 @@ export default function Projects() {
                                 </Badge>
                               </div>
                               {project.description && (
-                                <CardDescription>{project.description}</CardDescription>
+                                <CardDescription>{localizeProjectDesc(project.description)}</CardDescription>
                               )}
                             </div>
                             {project.user_id === user?.id && (

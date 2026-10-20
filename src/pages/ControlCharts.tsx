@@ -423,7 +423,7 @@ export default function ControlCharts() {
                     />
                   );
                 }}
-                name="Värde"
+                name={isZh ? "实测值" : "Value"}
               />
             </LineChart>
           </ResponsiveContainer>
