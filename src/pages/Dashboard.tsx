@@ -499,12 +499,12 @@ export default function Dashboard() {
                       <BarChart3 className="h-4 w-4" />
                     </span>
                     <div>
-                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Fasfördelning</h3>
-                      <p className="text-[11px] text-slate-400">Antal aktiva projekt per DMAIC-fas</p>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{isZh ? "DMAIC 阶段分布" : "Phase Distribution"}</h3>
+                      <p className="text-[11px] text-slate-400">{isZh ? "各阶段在研项目数量统计" : "Active projects per DMAIC phase"}</p>
                     </div>
                   </div>
                   <Badge variant="outline" className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                    {activeProjects.length} aktiva
+                    {activeProjects.length} {isZh ? "个进行中" : "active"}
                   </Badge>
                 </div>
                 
@@ -532,7 +532,7 @@ export default function Dashboard() {
                         {phaseData.name}
                       </span>
                       <span className="text-sm font-bold mt-1 font-mono" style={{ color: PHASE_COLORS[i] || "#3b82f6" }}>
-                        {phaseData.count} {phaseData.count === 1 ? "aktiv" : "aktiva"}
+                        {phaseData.count} {isZh ? "项" : "active"}
                       </span>
                     </div>
                   ))}
@@ -547,13 +547,13 @@ export default function Dashboard() {
                       <TrendingUp className="h-4 w-4" />
                     </span>
                     <div>
-                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Sigma-nivå Trend</h3>
-                      <p className="text-[11px] text-slate-400">Kvalitetshöjning över tid (alla projekt)</p>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">{isZh ? "西格玛水平演进趋势" : "Sigma Level Trend"}</h3>
+                      <p className="text-[11px] text-slate-400">{isZh ? "全项目质量度量与能力提升曲线" : "Quality maturity improvements over time"}</p>
                     </div>
                   </div>
                   {sigmaTrendData.length > 0 && (
                     <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 font-mono border-emerald-100 dark:border-emerald-950/50">
-                      Live data
+                      {isZh ? "动态数据" : "Live data"}
                     </Badge>
                   )}
                 </div>
@@ -561,8 +561,8 @@ export default function Dashboard() {
                 {sigmaTrendData.length === 0 ? (
                   <div className="h-52 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-950/10 rounded-xl space-y-1">
                     <TrendingUp className="h-8 w-8 opacity-40 text-slate-400" />
-                    <p className="text-xs font-semibold">Ingen sigma-spårning registrerad</p>
-                    <p className="text-[10px] max-w-[200px] text-center opacity-85">Fyll i mätdata på projektsidan för att rita trenden.</p>
+                    <p className="text-xs font-semibold">{isZh ? "暂无已记录的西格玛指标数据" : "No Sigma tracking records registered"}</p>
+                    <p className="text-[10px] max-w-[200px] text-center opacity-85">{isZh ? "在项目详情页中记录测量数值以生成能力提升趋势图。" : "Add measurement data in project pages to visualize the curve."}</p>
                   </div>
                 ) : (
                   <div className="h-52 pt-2">
@@ -902,12 +902,16 @@ export default function Dashboard() {
                                 <span className="text-slate-400 dark:text-slate-500 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
                                   <CheckCircle2 className="h-3 w-3 text-emerald-500" /> TOLLGATES (AKTIV FAS)
                                 </span>
-                                <span className="font-mono font-bold text-[10px] text-slate-600 dark:text-slate-300">{activePhaseCompleted} av {activePhaseTotal} ({activePhasePercent}%)</span>
+                                <span className="font-mono font-bold text-[10px] text-slate-600 dark:text-slate-300">
+                                  {activePhaseCompleted} / {activePhaseTotal} ({activePhasePercent}%)
+                                </span>
                               </div>
                               <Progress value={activePhasePercent} className="h-1 bg-slate-100/50 dark:bg-slate-800" />
                               
                               <div className="flex items-center justify-between text-[10px] pt-1 text-slate-400 border-t border-slate-100/20 mt-1 dark:border-slate-800/40">
-                                <span className="font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">Totalmål (Alla faser):</span>
+                                <span className="font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                  {isZh ? "全阶段综合完成率 (Overall DMAIC):" : "Total Goal (All Phases):"}
+                                </span>
                                 <span className="font-semibold text-slate-500 dark:text-slate-300">{overallProgressPercent}%</span>
                               </div>
                               <Progress value={overallProgressPercent} className="h-1 bg-slate-100/50 dark:bg-slate-800" />
@@ -917,8 +921,8 @@ export default function Dashboard() {
                                   <span className="animate-pulse h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0 mt-1" />
                                   <span>
                                     {activePhaseNum === 5 
-                                      ? "Redo att slutföras! Öppna projektet för att stänga sista fasen och avsluta projektet."
-                                      : `Fasen klar! Öppna projektet för att godkänna & flytta till Fas ${activePhaseNum + 1}.`}
+                                      ? (isZh ? "全阶段达标！请打开项目完成结项验收并归档。" : "Ready to close! Open the project to complete final sign-off.")
+                                      : (isZh ? `当前阶段门禁全部通过！请进入项目核准推进至第 ${activePhaseNum + 1} 阶段。` : `Phase complete! Open project to approve & advance to Phase ${activePhaseNum + 1}.`)}
                                   </span>
                                 </div>
                               )}
@@ -930,7 +934,7 @@ export default function Dashboard() {
                               {/* Left side: Sigma info */}
                               <div>
                                 {latestSigma !== null ? (
-                                  <div className="flex items-center gap-1.5" title="Senaste tillgängliga sigma-språng">
+                                  <div className="flex items-center gap-1.5" title={isZh ? "最新实测西格玛水平" : "Latest measured Sigma level"}>
                                     <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
                                     <span className="font-mono font-extrabold text-xs text-slate-900 dark:text-slate-100">{latestSigma.toFixed(2)}σ</span>
                                     {firstSigma !== null && latestSigma !== firstSigma && (
@@ -1165,7 +1169,7 @@ export default function Dashboard() {
                                     <div className="text-[10px] font-bold font-mono tracking-wide flex items-center gap-2">
                                       <span>{pos.startDate}</span>
                                       <span className="text-blue-500">→</span>
-                                      <span>{pos.endDate} {project.status === "completed" ? "(Slutfört - faktisk tid)" : "(estimerat slut)"}</span>
+                                      <span>{pos.endDate} {project.status === "completed" ? (isZh ? "(已实际交付完成)" : "(Completed - actual)") : (isZh ? "(预计交付日期)" : "(Estimated end)")}</span>
                                     </div>
                                   </div>
 

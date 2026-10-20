@@ -109,7 +109,7 @@ export default function VSM() {
 
   const addStep = () => {
     if (!newStepName.trim()) {
-      toast.error("Vänligen ange ett namn på processsteget.");
+      toast.error(isZh ? "请输入工序步骤名称。" : "Please enter a process step name.");
       return;
     }
     const ct = parseFloat(newCycleTime) || 0;
@@ -134,12 +134,12 @@ export default function VSM() {
     setNewCycleTime("");
     setNewCOTime("");
     setNewInventory("");
-    toast.success(`Lade till steget "${newStepName}"`);
+    toast.success(isZh ? `已添加工序「${newStepName}」` : `Added step "${newStepName}"`);
   };
 
   const removeStep = (id: string) => {
     if (steps.length <= 1) {
-      toast.error("Processen måste innehålla minst ett kvitto på processteg.");
+      toast.error(isZh ? "价值流中至少需保留 1 个工序步骤。" : "The process stream must retain at least one step.");
       return;
     }
     setSteps(steps.filter(s => s.id !== id));
@@ -248,27 +248,29 @@ export default function VSM() {
                 <CardHeader className="border-b border-primary/5 bg-background/50 py-4 px-6 border-b border-primary/5">
                   <CardTitle className="text-sm font-bold flex items-center gap-2 text-primary">
                     <HelpCircle className="h-4 w-4 text-primary animate-pulse" />
-                    Metodstöd: Hur du tolkar Värdeflödesanalysen (VSM)
+                    {isZh ? "方法指南：如何解读价值流图 (VSM 分析)" : "Method Guide: Interpreting Value Stream Mapping (VSM)"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 text-sm grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> Vad är VSM?
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> {isZh ? "什么是 VSM？" : "What is VSM?"}
                       </h4>
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        Värdeflödesanalys (Value Stream Mapping) är en hörnsten inom <strong>Lean</strong>. Den ritar upp hela resan för en produkt eller tjänst och mäter exakt hur mycket tid som skapar värde för kunden jämfört med tiden som går åt till väntan och lagerhållning.
+                        {isZh 
+                          ? "价值流图 (Value Stream Mapping) 是精益制造的基石工具。它绘制产品或服务从原材料输入到最终交付的全过程，量化对比增值工时与在制品等待停滞时间。" 
+                          : "Value Stream Mapping is a core Lean tool. It maps the journey of a product or service, measuring value-added transformation time against inventory and waiting delays."}
                       </p>
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> Begrepp i flödet
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> {isZh ? "价值流关键术语" : "Key Flow Concepts"}
                       </h4>
                       <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li><strong>C/T (Cycle Time / Cykeltid):</strong> Den tid en operatör eller maskin faktiskt arbetar med en enskild detalj.</li>
-                        <li><strong>C/O (Changeover / Ställtid):</strong> Tiden det tar att ställa om processen från att köra en produkt/typ till en annan.</li>
-                        <li><strong>Uptime (Tillgänglighet):</strong> Hur pålitlig utrustningen är i procent. 100% innebär helt störningsfri gång.</li>
+                        <li><strong>C/T ({isZh ? "节拍周期时间" : "Cycle Time"}):</strong> {isZh ? "工序处理单个零件的净物理作业耗时。" : "Actual operating time to process a single unit."}</li>
+                        <li><strong>C/O ({isZh ? "换型换模时间" : "Changeover Time"}):</strong> {isZh ? "机台从上一批次结束到下一批次合格首件产出的转换耗时。" : "Time required to transition production between products."}</li>
+                        <li><strong>Uptime ({isZh ? "设备开动率" : "Equipment Uptime"}):</strong> {isZh ? "设备无故障连续运行的可靠性百分比。" : "Machine availability percentage without unplanned downtime."}</li>
                       </ul>
                     </div>
                   </div>
@@ -276,23 +278,27 @@ export default function VSM() {
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-bold text-xs text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" /> Flaskhalsar &amp; Mellanlager (NVA)
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" /> {isZh ? "瓶颈工序与在制品 (NVA 浪费)" : "Bottlenecks & WIP Inventory (NVA)"}
                       </h4>
                       <p className="text-muted-foreground text-xs leading-relaxed mb-2">
-                        <strong>Mellanlager (∆)</strong> representerar produkter i kö. De kallas <strong>Non-Value Added (NVA)</strong> eftersom de binder kapital och förlänger ledtiden utan att höja produktens värde.
+                        {isZh 
+                          ? "工序间三角标识 (∆) 代表堆积排队的在制品。属于典型的非增值时间 (NVA)，积压资金并拉长交付周期。" 
+                          : "Inventory triangles (∆) represent queued work-in-progress. They are Non-Value Added (NVA) delays tying up working capital."}
                       </p>
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        Varje block med en cykeltid som överstiger <strong>kundtakten</strong> markeras automatiskt som en <strong>Flaskhals</strong>. Det är här flödet begränsas först!
+                        {isZh 
+                          ? "任何周期时间超过「客户节拍 (Takt Time)」的工序将被系统自动高亮标记为「瓶颈」，这是限制整线产能的首要根因！" 
+                          : "Process blocks with cycle time exceeding Customer Takt Time are automatically flagged as Bottlenecks."}
                       </p>
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> Formler &amp; Little&apos;s Lag
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-primary" /> {isZh ? "计算公式与利特尔法则 (Little's Law)" : "Formulas & Little's Law"}
                       </h4>
                       <div className="font-mono text-[11px] bg-background border rounded px-3 py-2 text-muted-foreground leading-relaxed">
-                        • Lagerledtid = Lager / Efterfrågan (dygn)<br />
-                        • Kundtakt = Arbetstid per dag / Enheter per dag<br />
-                        • PCE (Flödeseffektivitet) = VA-tid / Total Ledtid
+                        • {isZh ? "在制品停留周期 = 在制品库存 / 客户日均需求" : "Inventory Lead Time = Inventory / Daily Demand"}<br />
+                        • {isZh ? "客户节拍 Takt = 每日净工作秒数 / 每日需求件数" : "Customer Takt Time = Operating Seconds / Demand"}<br />
+                        • {isZh ? "流动效率 PCE = 纯增值时间 (VA) / 总交付周期 (PLT)" : "PCE (Cycle Efficiency) = VA Time / Total Lead Time"}
                       </div>
                     </div>
                   </div>
@@ -300,19 +306,19 @@ export default function VSM() {
                   <div className="space-y-4 bg-background/40 p-5 rounded-xl border border-primary/5 flex flex-col justify-between">
                     <div className="space-y-2">
                       <h4 className="font-bold text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" /> PCE (Process Cycle Efficiency)
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" /> {isZh ? "过程循环流动效率 (PCE 评价)" : "Process Cycle Efficiency (PCE)"}
                       </h4>
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        Visar i % hur mycket av den totala tiden i flödet som är värdeskapande. 
+                        {isZh ? "量化显示产品全生命周期中真正处于创造价值状态的时间占比：" : "Quantifies percentage of overall lead time that is genuinely value-adding:"}
                       </p>
                       <ul className="space-y-1 text-[11px] text-muted-foreground pl-1.5">
-                        <li className="flex items-center gap-1.5"><strong className="text-rose-500">&lt; 5%</strong> - Mycket slöseri (ledtiden styrs av lager).</li>
-                        <li className="flex items-center gap-1.5"><strong className="text-amber-500">5-15%</strong> - Standard industriellt utflöde.</li>
-                        <li className="flex items-center gap-1.5"><strong className="text-emerald-500">&gt; 15%</strong> - Lean i världsklass (minimal väntetid).</li>
+                        <li className="flex items-center gap-1.5"><strong className="text-rose-500">&lt; 5%</strong> - {isZh ? "典型离散车间 (浪费严重，在制品积压)" : "High Waste (Dominated by queue delays)"}</li>
+                        <li className="flex items-center gap-1.5"><strong className="text-amber-500">5-15%</strong> - {isZh ? "行业平均运转水准" : "Standard Industrial Performance"}</li>
+                        <li className="flex items-center gap-1.5"><strong className="text-emerald-500">&gt; 15%</strong> - {isZh ? "世界级精益标杆 (连续单件流)" : "World-Class Lean (Continuous Flow)"}</li>
                       </ul>
                     </div>
                     <div className="text-[10px] text-muted-foreground italic leading-normal border-t pt-2.5 mt-2">
-                      💡 Sänk ledtiden radikalt genom att angripa lager och köer mellan stegen, snarare än att tvinga operatörer att springa snabbare!
+                      💡 {isZh ? "精益核心策略：削减交付周期的关键在于消除工序间的在制品停滞，而不是盲目催促操作工跑得更快！" : "Lean principle: Slash lead time by attacking queue inventory and handoffs, not by pushing machines beyond safe limits!"}
                     </div>
                   </div>
                 </CardContent>
@@ -400,7 +406,7 @@ export default function VSM() {
                 <Card className="border border-primary/5 shadow-3xs">
                   <CardHeader className="pb-3 border-b border-primary/5">
                     <CardTitle className="text-sm font-bold flex items-center gap-2">
-                      <Plus className="h-4 w-4 text-emerald-500" /> Lägg till nytt processsteg
+                      <Plus className="h-4 w-4 text-emerald-500" /> {isZh ? "添加新工序步骤" : "Add Process Step"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-3">
@@ -410,7 +416,7 @@ export default function VSM() {
                       </Label>
                       <Input 
                         id="newStepName" 
-                        placeholder={isZh ? "如：激光切割、冲压、焊接、包装..." : "T.ex. Montering, Lackering"} 
+                        placeholder={isZh ? "如：激光切割、冲压、焊接、包装..." : "e.g. Machining, Assembly, Packing"} 
                         value={newStepName} 
                         onChange={e => setNewStepName(e.target.value)}
                         className="text-xs"
@@ -420,12 +426,12 @@ export default function VSM() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label htmlFor="newCycleTime" className="text-xs">
-                          {isZh ? "周期时间 C/T (秒)" : "Cykeltid C/T (sek)"}
+                          {isZh ? "周期时间 C/T (秒)" : "Cycle Time C/T (sec)"}
                         </Label>
                         <Input 
                           id="newCycleTime" 
                           type="number" 
-                          placeholder={isZh ? "如：180" : "Ex. 180"} 
+                          placeholder={isZh ? "如：180" : "180"} 
                           value={newCycleTime} 
                           onChange={e => setNewCycleTime(e.target.value)}
                           className="text-xs"
@@ -433,12 +439,12 @@ export default function VSM() {
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="newCOTime" className="text-xs">
-                          {isZh ? "换型时间 C/O (分)" : "Ställtid C/O (min)"}
+                          {isZh ? "换型时间 C/O (分)" : "Changeover C/O (min)"}
                         </Label>
                         <Input 
                           id="newCOTime" 
                           type="number" 
-                          placeholder={isZh ? "如：15" : "Ex. 15"} 
+                          placeholder={isZh ? "如：15" : "15"} 
                           value={newCOTime} 
                           onChange={e => setNewCOTime(e.target.value)}
                           className="text-xs"
@@ -462,7 +468,7 @@ export default function VSM() {
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="newOperators" className="text-xs">
-                          {isZh ? "操作工人数" : "Operatörer"}
+                          {isZh ? "操作工人数" : "Operators"}
                         </Label>
                         <Input 
                           id="newOperators" 
@@ -478,23 +484,23 @@ export default function VSM() {
                     <div className="space-y-1 pt-1">
                       <Label htmlFor="newInventory" className="text-xs flex items-center gap-1">
                         <Layers className="h-3.5 w-3.5 text-amber-500" /> 
-                        {isZh ? "工序后在制品缓冲区库存 (件)" : "Lager efter steget (enheter)"}
+                        {isZh ? "工序后在制品缓冲区库存 (件)" : "Buffer Inventory (units)"}
                       </Label>
                       <Input 
                         id="newInventory" 
                         type="number" 
-                        placeholder={isZh ? "如：50" : "Ex. 50"} 
+                        placeholder={isZh ? "如：50" : "50"} 
                         value={newInventory} 
                         onChange={e => setNewInventory(e.target.value)}
                         className="text-xs"
                       />
                       <span className="text-[10px] text-muted-foreground block">
-                        {isZh ? "存储在工序间的在制品 (WIP) / 待处理堆积工单。" : "Lagrade halvfabrikat / köande ärenden före nästa operation."}
+                        {isZh ? "存储在工序间的在制品 (WIP) / 待处理堆积工单。" : "Queued WIP units waiting before next process step."}
                       </span>
                     </div>
 
                     <Button onClick={addStep} size="sm" className="w-full mt-2 font-medium">
-                      {isZh ? "插入工序到价值流" : "Infoga processsteg"}
+                      {isZh ? "插入工序到价值流" : "Add Step to Stream"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -508,9 +514,12 @@ export default function VSM() {
                   <CardHeader className="bg-muted/10 border-b border-primary/5 py-4">
                     <CardTitle className="text-base font-bold flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        <Workflow className="h-4.5 w-4.5 text-primary" /> Visualisering av Värdeflödet (Material & Lager)
+                        <Workflow className="h-4.5 w-4.5 text-primary" /> 
+                        {isZh ? "价值流可视化全景图 (物流与在制品链)" : "Value Stream Map Visualization (Material & Flow)"}
                       </span>
-                      <span className="text-xs text-muted-foreground">Klicka i fälten för att ändra värden direkt i kedjan</span>
+                      <span className="text-xs text-muted-foreground font-normal">
+                        {isZh ? "点击下方各单元格可直接在流程链中修改数值" : "Click values to edit directly"}
+                      </span>
                     </CardTitle>
                   </CardHeader>
                   
@@ -527,12 +536,14 @@ export default function VSM() {
                             <div className={`w-52 rounded-xl border p-4 bg-background shadow-3xs relative transition-all hover:ring-1 hover:ring-primary/20 ${isTaktExceeded ? "border-rose-400 dark:border-rose-800" : "border-primary/10"}`}>
                               {isTaktExceeded && (
                                 <Badge variant="destructive" className="absolute -top-2.5 left-3 text-[9px] uppercase tracking-wider py-0.5 px-2">
-                                  Flaskhals (&gt; Takt)
+                                  {isZh ? "瓶颈工序 (>节拍)" : "Bottleneck (>Takt)"}
                                 </Badge>
                               )}
                               
                               <div className="flex justify-between items-start mb-2">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase">Steg {index + 1}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                                  {isZh ? `工序 ${index + 1}` : `Step ${index + 1}`}
+                                </span>
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
@@ -551,7 +562,7 @@ export default function VSM() {
 
                               <div className="space-y-2 text-xs">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Cykeltid (C/T):</span>
+                                  <span className="text-muted-foreground">{isZh ? "周期时间 (C/T):" : "Cycle Time (C/T):"}</span>
                                   <div className="flex items-center gap-1 w-20 justify-end">
                                     <input 
                                       type="number" 
@@ -559,12 +570,12 @@ export default function VSM() {
                                       value={step.cycleTime || ""} 
                                       onChange={e => updateStepField(step.id, "cycleTime", parseFloat(e.target.value) || 0)} 
                                     />
-                                    <span className="text-muted-foreground text-[10px]">s</span>
+                                    <span className="text-muted-foreground text-[10px]">{isZh ? "秒" : "s"}</span>
                                   </div>
                                 </div>
 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Ställtid (C/O):</span>
+                                  <span className="text-muted-foreground">{isZh ? "换型时间 (C/O):" : "Changeover (C/O):"}</span>
                                   <div className="flex items-center gap-1 w-20 justify-end">
                                     <input 
                                       type="number" 
@@ -572,12 +583,12 @@ export default function VSM() {
                                       value={step.changeoverTime || ""} 
                                       onChange={e => updateStepField(step.id, "changeoverTime", parseFloat(e.target.value) || 0)} 
                                     />
-                                    <span className="text-muted-foreground text-[10px]">m</span>
+                                    <span className="text-muted-foreground text-[10px]">{isZh ? "分" : "min"}</span>
                                   </div>
                                 </div>
 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Uptime:</span>
+                                  <span className="text-muted-foreground">{isZh ? "开动率 Uptime:" : "Uptime:"}</span>
                                   <div className="flex items-center gap-1 w-20 justify-end">
                                     <input 
                                       type="number" 
@@ -590,7 +601,7 @@ export default function VSM() {
                                 </div>
 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Operatörer:</span>
+                                  <span className="text-muted-foreground">{isZh ? "操作工配置:" : "Operators:"}</span>
                                   <div className="flex items-center gap-1 w-20 justify-end">
                                     <input 
                                       type="number" 
@@ -598,7 +609,7 @@ export default function VSM() {
                                       value={step.operators || ""} 
                                       onChange={e => updateStepField(step.id, "operators", parseFloat(e.target.value) || 1)} 
                                     />
-                                    <span className="text-muted-foreground text-[10px]">st</span>
+                                    <span className="text-muted-foreground text-[10px]">{isZh ? "人" : "pers"}</span>
                                   </div>
                                 </div>
                               </div>
@@ -613,7 +624,9 @@ export default function VSM() {
                                 <div className="absolute -top-1 right-1">
                                   <Badge className="bg-amber-500 hover:bg-amber-600 font-bold p-0 px-1 text-[8px] h-3">∆</Badge>
                                 </div>
-                                <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider block mb-1">Mellanlager</span>
+                                <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider block mb-1">
+                                  {isZh ? "在制品库存" : "WIP Buffer"}
+                                </span>
                                 <div className="flex items-center justify-center gap-1 mb-1">
                                   <input 
                                     type="number" 
@@ -622,13 +635,13 @@ export default function VSM() {
                                     placeholder="0"
                                     onChange={e => updateStepField(step.id, "inventoryQuantity", parseFloat(e.target.value) || 0)} 
                                   />
-                                  <span className="text-[10px] text-muted-foreground">st</span>
+                                  <span className="text-[10px] text-muted-foreground">{isZh ? "件" : "pcs"}</span>
                                 </div>
                                 <span className="text-[10px] font-mono text-muted-foreground leading-none">
                                   {leadTimeDays >= 1 
-                                    ? `~${leadTimeDays.toFixed(1)} dygn` 
-                                    : `${leadTimeHrs.toFixed(1)} tim`
-                                  } ledtid
+                                    ? `~${leadTimeDays.toFixed(1)} ${isZh ? "天" : "d"}` 
+                                    : `${leadTimeHrs.toFixed(1)} ${isZh ? "小时" : "h"}`
+                                  } {isZh ? "停滞" : "lead time"}
                                 </span>
                               </div>
 
@@ -647,7 +660,8 @@ export default function VSM() {
               <Card className="border border-primary/10 overflow-hidden shadow-sm">
                 <CardHeader className="bg-muted/10 border-b border-primary/5 py-3">
                   <CardTitle className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-primary" /> Värdeflödestidslinje (Value Stream Timeline Staircase)
+                    <Clock className="h-4 w-4 text-primary" /> 
+                    {isZh ? "价值流周转台阶线 (Value Stream Staircase)" : "Value Stream Timeline Staircase"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -668,7 +682,7 @@ export default function VSM() {
                               </span>
                               {isHighInventory && (
                                 <span className="absolute -top-7 left-1 text-[9px] text-rose-500 font-bold flex items-center gap-0.5">
-                                  <AlertTriangle className="h-2.5 w-2.5" /> Hög väntetid
+                                  <AlertTriangle className="h-2.5 w-2.5" /> {isZh ? "高等待停滞" : "High Queue"}
                                 </span>
                               )}
                             </div>
@@ -748,7 +762,7 @@ export default function VSM() {
 
                   <div className="mt-6 flex flex-col sm:flex-row justify-between items-center border-t border-primary/5 pt-6 gap-4">
                     <p className="text-xs text-muted-foreground max-w-xl">
-                      💡 <strong>Lean-rekommendation:</strong> Traditionella flöden har ofta ett PCE-värde under 5%. Genom att halvera lager- och väntetider framför flaskhalsar kan ni sänka ledtiden till kunden dramatiskt utan att behöva öka takten på maskinerna!
+                      💡 <strong>{isZh ? "精益改善建议:" : "Lean Recommendation:"}</strong> {isZh ? "传统制造流程的循环效率 (PCE) 往往不足 5%。通过聚焦削减瓶颈工序前的在制品排队积压与等待，您可以在完全不增加机台设计产速的前提下拉低 50% 以上的交付周期！" : "Traditional operations often have PCE below 5%. Cutting queue inventory in front of bottlenecks slashes customer lead times without machine speed increases!"}
                     </p>
                     <div className="w-full sm:w-auto shrink-0 flex items-center justify-end">
                       <CalculatorSaveButton canSave={canSave} isSaving={isSaving} hasResult={true} notes={notes} onNotesChange={setNotes} onSave={handleSave} />
